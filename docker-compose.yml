@@ -1,0 +1,77 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: mystic-japan-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-mystic_japan}
+      POSTGRES_USER: ${POSTGRES_USER:-mystic_japan}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-mystic_japan} -d ${POSTGRES_DB:-mystic_japan}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      target: dev
+    container_name: mystic-japan-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      APP_NAME: "Mystic Japan API"
+      APP_ENV: local
+      APP_KEY: ${APP_KEY:-base64:3nVOZ/HG2RFnnl86kCAnW64mJ70Cc9JL849r+c94G1Y=}
+      APP_DEBUG: "true"
+      APP_URL: http://localhost:${BACKEND_PORT:-8000}
+      APP_LOCALE: ja
+      APP_FALLBACK_LOCALE: ja
+      APP_FAKER_LOCALE: ja_JP
+      LOG_CHANNEL: stderr
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${POSTGRES_DB:-mystic_japan}
+      DB_USERNAME: ${POSTGRES_USER:-mystic_japan}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      CACHE_STORE: database
+      QUEUE_CONNECTION: database
+      SESSION_DRIVER: database
+      SANCTUM_STATEFUL_DOMAINS: localhost:3000,127.0.0.1:3000
+      FRONTEND_URL: http://localhost:3000
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    volumes:
+      - ./backend:/var/www/html
+      - backend_vendor:/var/www/html/vendor
+
+  frontend:
+    build:
+      context: ./frontend
+      target: dev
+    container_name: mystic-japan-frontend
+    depends_on:
+      - backend
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8000/api}
+      NEXT_TELEMETRY_DISABLED: "1"
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+      - frontend_next:/app/.next
+
+volumes:
+  postgres_data:
+  backend_vendor:
+  frontend_node_modules:
+  frontend_next:

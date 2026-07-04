@@ -1,0 +1,92 @@
+services:
+  - type: web
+    name: mystic-japan-api
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /api/spots
+    autoDeployTrigger: commit
+    envVars:
+      - key: APP_NAME
+        value: Mystic Japan API
+      - key: APP_ENV
+        value: production
+      - key: APP_KEY
+        sync: false
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_URL
+        fromService:
+          type: web
+          name: mystic-japan-api
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: APP_LOCALE
+        value: ja
+      - key: APP_FALLBACK_LOCALE
+        value: ja
+      - key: APP_FAKER_LOCALE
+        value: ja_JP
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: LOG_LEVEL
+        value: info
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_URL
+        fromDatabase:
+          name: mystic-japan-db
+          property: connectionString
+      - key: DB_SSLMODE
+        value: prefer
+      - key: CACHE_STORE
+        value: database
+      - key: QUEUE_CONNECTION
+        value: database
+      - key: SESSION_DRIVER
+        value: database
+      - key: RUN_DATABASE_SEEDER
+        value: "true"
+      - key: FRONTEND_URL
+        fromService:
+          type: web
+          name: mystic-japan-web
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: SANCTUM_STATEFUL_DOMAINS
+        fromService:
+          type: web
+          name: mystic-japan-web
+          envVarKey: RENDER_EXTERNAL_HOSTNAME
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-2.5-flash
+
+  - type: web
+    name: mystic-japan-web
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./frontend/Dockerfile
+    dockerContext: ./frontend
+    healthCheckPath: /
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_TELEMETRY_DISABLED
+        value: "1"
+      - key: NEXT_PUBLIC_API_ORIGIN_URL
+        fromService:
+          type: web
+          name: mystic-japan-api
+          envVarKey: RENDER_EXTERNAL_URL
+
+databases:
+  - name: mystic-japan-db
+    plan: free
+    region: singapore
+    databaseName: mystic_japan
+    user: mystic_japan
+    postgresMajorVersion: "16"
