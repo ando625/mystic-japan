@@ -1,0 +1,122 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+:root {
+  --background: #050816;
+  --foreground: #f8fbff;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: ui-sans-serif, system-ui, "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: ui-sans-serif, system-ui, "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.text-glow {
+  text-shadow: 0 0 18px rgba(191, 219, 254, 0.45), 0 0 34px rgba(168, 85, 247, 0.28);
+}
+
+.stars-layer {
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.72) 1px, transparent 1.5px),
+    radial-gradient(circle, rgba(191, 219, 254, 0.48) 1px, transparent 1.6px);
+  background-position:
+    0 0,
+    38px 64px;
+  background-size:
+    120px 120px,
+    180px 180px;
+}
+
+.leaflet-container {
+  min-height: 100%;
+  background: #06112c;
+  font-family: inherit;
+}
+
+.leaflet-control-attribution,
+.leaflet-control-zoom {
+  display: none;
+}
+
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  border: 1px solid rgba(196, 181, 253, 0.26);
+  background: rgba(2, 6, 23, 0.94);
+  box-shadow: 0 0 24px rgba(168, 85, 247, 0.28);
+}
+
+.leaflet-popup-content {
+  margin: 12px;
+}
+
+.mystic-pin {
+  position: relative;
+  display: grid;
+  height: 34px;
+  width: 34px;
+  place-items: center;
+}
+
+.mystic-pin::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: 999px;
+  border: 1px solid rgba(216, 180, 254, 0.8);
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.95), rgba(79, 70, 229, 0.55));
+  box-shadow: 0 0 26px rgba(168, 85, 247, 0.8), 0 0 52px rgba(56, 189, 248, 0.3);
+}
+
+.mystic-pin::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border-radius: 999px;
+  border: 1px solid rgba(168, 85, 247, 0.36);
+  animation: ripple 1.8s ease-out infinite;
+}
+
+.mystic-pin:hover::before {
+  box-shadow: 0 0 34px rgba(216, 180, 254, 0.95), 0 0 72px rgba(56, 189, 248, 0.42);
+  transform: scale(1.08);
+}
+
+.glow-pulse {
+  animation: glow-pulse 2.7s ease-in-out infinite;
+}
+
+@keyframes ripple {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.64);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.35);
+  }
+}
+
+@keyframes glow-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 24px rgba(168, 85, 247, 0.3);
+  }
+
+  50% {
+    box-shadow: 0 0 44px rgba(168, 85, 247, 0.58), 0 0 72px rgba(56, 189, 248, 0.18);
+  }
+}

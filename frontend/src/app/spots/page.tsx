@@ -1,0 +1,48 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { categories } from "@/data/categories";
+import { getSpots } from "@/lib/api";
+import type { SpotCategory } from "@/types/domain";
+import { cn } from "@/lib/utils";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { SpotCard } from "@/components/spot/SpotCard";
+
+export default function SpotsPage() {
+  const [category, setCategory] = useState<SpotCategory | "all">("all");
+  const { data: spots = [] } = useQuery({
+    queryKey: ["spots"],
+    queryFn: () => getSpots(),
+  });
+
+  const filtered = useMemo(
+    () => (category === "all" ? spots : spots.filter((spot) => spot.category === category)),
+    [category, spots],
+  );
+
+  return (
+    <main className="mx-auto max-w-7xl px-4 py-8 md:px-8">
+      <PageHeader title="絶景コレクション" subtitle="神話、自然、海、森。解放するほど図鑑が光を取り戻します。" />
+      <div className="mb-6 flex gap-2 overflow-x-auto pb-2">
+        {categories.map((item) => (
+          <button
+            key={item.value}
+            className={cn(
+              "min-h-10 shrink-0 rounded-[8px] border border-violet-300/20 bg-slate-950/45 px-4 text-sm text-slate-200 transition hover:border-violet-200/50 hover:bg-violet-500/20",
+              category === item.value && "border-violet-200/70 bg-violet-500/32 text-white shadow-[0_0_24px_rgba(168,85,247,0.28)]",
+            )}
+            onClick={() => setCategory(item.value)}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {filtered.map((spot) => (
+          <SpotCard key={spot.id} spot={spot} />
+        ))}
+      </div>
+    </main>
+  );
+}
