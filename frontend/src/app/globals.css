@@ -70,6 +70,31 @@ a {
   place-items: center;
 }
 
+.mystic-pin-wrap {
+  position: relative;
+  display: inline-flex;
+  min-width: 132px;
+  align-items: center;
+  gap: 7px;
+  transform: translateZ(0);
+}
+
+.mystic-pin-label {
+  max-width: 92px;
+  overflow: hidden;
+  border: 1px solid rgba(196, 181, 253, 0.28);
+  border-radius: 8px;
+  background: rgba(2, 6, 23, 0.76);
+  box-shadow: 0 0 20px rgba(79, 70, 229, 0.2);
+  color: rgba(241, 245, 249, 0.94);
+  font-size: 11px;
+  line-height: 1;
+  padding: 6px 8px;
+  text-overflow: ellipsis;
+  text-shadow: 0 0 12px rgba(191, 219, 254, 0.42);
+  white-space: nowrap;
+}
+
 .mystic-pin::before {
   content: "";
   position: absolute;

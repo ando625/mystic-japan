@@ -53,6 +53,11 @@ services:
           type: web
           name: mystic-japan-web
           envVarKey: RENDER_EXTERNAL_URL
+      - key: CORS_ALLOWED_ORIGINS
+        fromService:
+          type: web
+          name: mystic-japan-web
+          envVarKey: RENDER_EXTERNAL_URL
       - key: SANCTUM_STATEFUL_DOMAINS
         fromService:
           type: web
