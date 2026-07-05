@@ -11,6 +11,7 @@ import { categoryLabel } from "@/data/categories";
 import { cn } from "@/lib/utils";
 import { AiGuideChat } from "@/components/spot/AiGuideChat";
 import { BgmPanel } from "@/components/spot/BgmPanel";
+import { CinematicSpotModal } from "@/components/spot/CinematicSpotModal";
 import { SpotImage } from "@/components/spot/SpotImage";
 import { UnlockModal } from "@/components/spot/UnlockModal";
 import { GlassPanel } from "@/components/ui/GlassPanel";
@@ -30,6 +31,7 @@ export default function SpotDetailPage() {
   const queryClient = useQueryClient();
   const [tab, setTab] = useState<(typeof tabs)[number]["key"]>("mythology");
   const [showUnlock, setShowUnlock] = useState(false);
+  const [showCinematic, setShowCinematic] = useState(false);
 
   const { data: spot, isLoading } = useQuery({
     queryKey: ["spot", spotId, token],
@@ -78,6 +80,7 @@ export default function SpotDetailPage() {
         points={unlock.data?.gained_points ?? spot.mystic_points}
         spotName={spot.name}
       />
+      <CinematicSpotModal open={showCinematic} spot={spot} onClose={() => setShowCinematic(false)} />
       <Link className="mb-5 inline-flex items-center gap-2 text-sm text-cyan-100/80 hover:text-white" href="/spots">
         <ArrowLeft className="h-4 w-4" />
         図鑑へ戻る
@@ -105,9 +108,13 @@ export default function SpotDetailPage() {
           <GlassPanel className="p-5">
             <p className="text-sm leading-7 text-slate-200/82">{spot.description}</p>
             <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <button className="grid min-h-16 place-items-center rounded-[8px] border border-violet-300/20 bg-slate-950/42 text-xs text-slate-200">
+              <button
+                className="grid min-h-16 place-items-center rounded-[8px] border border-violet-300/20 bg-slate-950/42 text-xs text-slate-200 transition hover:border-cyan-100/45 hover:bg-cyan-500/12"
+                onClick={() => setShowCinematic(true)}
+                type="button"
+              >
                 <ImageIcon className="mb-1 h-5 w-5 text-cyan-100" />
-                ギャラリー
+                幻想鑑賞
               </button>
               <button className="grid min-h-16 place-items-center rounded-[8px] border border-violet-300/20 bg-slate-950/42 text-xs text-slate-200">
                 <Play className="mb-1 h-5 w-5 text-cyan-100" />

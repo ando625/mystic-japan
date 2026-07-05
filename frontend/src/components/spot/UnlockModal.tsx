@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { Gem, Sparkles, X } from "lucide-react";
+import { useEffect } from "react";
 
 type UnlockModalProps = {
   open: boolean;
@@ -12,6 +13,22 @@ type UnlockModalProps = {
 };
 
 export function UnlockModal({ open, spotName, points, achievements, onClose }: UnlockModalProps) {
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose, open]);
+
   return (
     <AnimatePresence>
       {open ? (
@@ -20,22 +37,25 @@ export function UnlockModal({ open, spotName, points, achievements, onClose }: U
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
+          onClick={onClose}
         >
           <motion.div
             className="relative w-full max-w-lg overflow-hidden rounded-[8px] border border-violet-200/35 bg-slate-950/88 p-6 text-center shadow-[0_0_80px_rgba(168,85,247,0.45)]"
             initial={{ opacity: 0, scale: 0.82, y: 28 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 12 }}
+            onClick={(event) => event.stopPropagation()}
             transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
           >
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(168,85,247,0.24),transparent_58%)]" />
             <button
               aria-label="閉じる"
-              className="absolute right-4 top-4 rounded-full border border-violet-300/20 bg-slate-950/50 p-2 text-slate-300 transition hover:text-white"
+              className="absolute right-4 top-4 z-20 rounded-full border border-violet-300/20 bg-slate-950/70 p-2 text-slate-300 transition hover:border-violet-200/60 hover:text-white"
               onClick={onClose}
+              type="button"
             >
               <X className="h-4 w-4" />
             </button>
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(168,85,247,0.24),transparent_58%)]" />
             <motion.div
               className="relative mx-auto mb-6 grid h-28 w-28 place-items-center"
               animate={{ rotate: [0, 8, -8, 0], scale: [1, 1.06, 1] }}
