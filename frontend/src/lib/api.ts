@@ -2,9 +2,28 @@ import { fallbackAchievements } from "@/data/fallback-achievements";
 import { fallbackSpots } from "@/data/fallback-spots";
 import type { Achievement, CollectionSummary, Spot, User } from "@/types/domain";
 
-const apiOriginUrl = process.env.NEXT_PUBLIC_API_ORIGIN_URL;
-const configuredApiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-const apiBaseUrl = configuredApiBaseUrl || (apiOriginUrl ? `${apiOriginUrl}/api` : "http://localhost:8000/api");
+function resolveApiBaseUrl() {
+  const configuredApiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const isRenderBrowser = typeof window !== "undefined" && window.location.hostname.endsWith(".onrender.com");
+
+  if (configuredApiBaseUrl && !(isRenderBrowser && configuredApiBaseUrl.includes("localhost"))) {
+    return configuredApiBaseUrl;
+  }
+
+  const configuredApiOriginUrl = process.env.NEXT_PUBLIC_API_ORIGIN_URL;
+
+  if (configuredApiOriginUrl) {
+    return `${configuredApiOriginUrl}/api`;
+  }
+
+  if (isRenderBrowser) {
+    return `${window.location.origin.replace("-web.onrender.com", "-api.onrender.com")}/api`;
+  }
+
+  return "http://localhost:8000/api";
+}
+
+const apiBaseUrl = resolveApiBaseUrl();
 
 type JsonApiResponse<T> = {
   data: T;
@@ -113,6 +132,18 @@ export async function login(email: string, password: string) {
   return request<{ user: User; token: string }>("/login", null, {
     method: "POST",
     body: JSON.stringify({ email, password }),
+  });
+}
+
+export async function register(name: string, email: string, password: string) {
+  return request<{ user: User; token: string }>("/register", null, {
+    method: "POST",
+    body: JSON.stringify({
+      name,
+      email,
+      password,
+      password_confirmation: password,
+    }),
   });
 }
 

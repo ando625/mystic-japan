@@ -2,6 +2,14 @@
 
 import { motion, useScroll, useTransform } from "framer-motion";
 
+const homeBackgrounds = [
+  "/images/home/home.png",
+  "/images/home/home3.png",
+  "/images/home/home4.png",
+  "/images/home/home5.png",
+  "/images/home/home6.png",
+];
+
 export function MysticBackground() {
   const { scrollY } = useScroll();
   const imageY = useTransform(scrollY, [0, 1200], [0, 90]);
@@ -10,10 +18,23 @@ export function MysticBackground() {
 
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-[#050816]">
-      <motion.div
-        className="absolute -inset-x-8 -inset-y-10 bg-[url('/images/home/home.png')] bg-cover bg-center opacity-55"
-        style={{ y: imageY }}
-      />
+      {homeBackgrounds.map((src, index) => (
+        <motion.div
+          animate={{ opacity: index === 0 ? [0.5, 0.34, 0.5] : [0, 0.42, 0] }}
+          className="absolute -inset-x-8 -inset-y-10 bg-cover bg-center"
+          key={src}
+          style={{
+            backgroundImage: `url(${src})`,
+            y: imageY,
+          }}
+          transition={{
+            delay: index * 5,
+            duration: 24,
+            ease: "easeInOut",
+            repeat: Infinity,
+          }}
+        />
+      ))}
       <motion.div
         animate={{
           backgroundPosition: ["18% 12%, 80% 10%, 0 0", "24% 15%, 74% 12%, 0 0", "18% 12%, 80% 10%, 0 0"],

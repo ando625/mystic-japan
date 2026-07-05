@@ -2,10 +2,11 @@
 
 import { FormEvent, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { LogIn, UserRound } from "lucide-react";
+import { LogIn, UserPlus, UserRound } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { login } from "@/lib/api";
+import { login, register } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth-store";
+import { cn } from "@/lib/utils";
 import { GlassPanel } from "@/components/ui/GlassPanel";
 import { GlowButton } from "@/components/ui/GlowButton";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -13,11 +14,13 @@ import { PageHeader } from "@/components/ui/PageHeader";
 export default function LoginPage() {
   const router = useRouter();
   const { user, setSession, clearSession } = useAuthStore();
+  const [mode, setMode] = useState<"login" | "register">("login");
+  const [name, setName] = useState("旅人");
   const [email, setEmail] = useState("traveler@example.com");
   const [password, setPassword] = useState("password");
 
   const mutation = useMutation({
-    mutationFn: () => login(email, password),
+    mutationFn: () => (mode === "login" ? login(email, password) : register(name, email, password)),
     onSuccess: (session) => {
       setSession(session.token, session.user);
       router.push("/collection");
@@ -48,6 +51,43 @@ export default function LoginPage() {
           </div>
         ) : (
           <form className="space-y-5" onSubmit={handleSubmit}>
+            <div className="grid grid-cols-2 gap-2 rounded-[8px] border border-violet-300/20 bg-slate-950/42 p-1">
+              {(["login", "register"] as const).map((item) => (
+                <button
+                  className={cn(
+                    "min-h-10 rounded-[8px] text-sm text-slate-300 transition",
+                    mode === item && "bg-violet-500/30 text-white shadow-[0_0_18px_rgba(168,85,247,0.24)]",
+                  )}
+                  key={item}
+                  onClick={() => {
+                    setMode(item);
+                    mutation.reset();
+                    if (item === "register" && email === "traveler@example.com") {
+                      setEmail("");
+                      setPassword("");
+                    }
+                    if (item === "login") {
+                      setEmail("traveler@example.com");
+                      setPassword("password");
+                    }
+                  }}
+                  type="button"
+                >
+                  {item === "login" ? "ログイン" : "新規登録"}
+                </button>
+              ))}
+            </div>
+            {mode === "register" ? (
+              <label className="block">
+                <span className="text-sm text-slate-300">旅人名</span>
+                <input
+                  className="mt-2 min-h-12 w-full rounded-[8px] border border-violet-300/20 bg-slate-950/55 px-4 text-white outline-none transition focus:border-violet-200/70"
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  type="text"
+                />
+              </label>
+            ) : null}
             <label className="block">
               <span className="text-sm text-slate-300">メールアドレス</span>
               <input
@@ -67,10 +107,16 @@ export default function LoginPage() {
               />
             </label>
             <GlowButton className="w-full" disabled={mutation.isPending}>
-              <LogIn className="h-4 w-4" />
-              {mutation.isPending ? "接続中..." : "ログイン"}
+              {mode === "login" ? <LogIn className="h-4 w-4" /> : <UserPlus className="h-4 w-4" />}
+              {mutation.isPending ? "接続中..." : mode === "login" ? "ログイン" : "新規登録して始める"}
             </GlowButton>
-            {mutation.isError ? <p className="text-sm text-rose-200">ログインに失敗しました。</p> : null}
+            {mutation.isError ? (
+              <p className="text-sm text-rose-200">
+                {mode === "login"
+                  ? "ログインに失敗しました。メールアドレスとパスワードを確認してください。"
+                  : "登録に失敗しました。パスワードは8文字以上、メールアドレスは未使用のものを入力してください。"}
+              </p>
+            ) : null}
           </form>
         )}
       </GlassPanel>
