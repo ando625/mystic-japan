@@ -74,6 +74,12 @@ export async function getSpot(id: number, token?: string | null): Promise<Spot> 
 export async function unlockSpot(id: number, token: string) {
   return request<{
     collection: { spot_id: number; unlocked_at: string };
+    user_progress?: {
+      is_unlocked: boolean;
+      visited_at?: string | null;
+      stamp_obtained?: boolean;
+      total_points?: number;
+    };
     gained_points: number;
     new_achievements: Array<{ id: number; title: string }>;
     already_unlocked: boolean;
@@ -88,6 +94,12 @@ export async function visitSpot(id: number, token: string) {
     visited_at: string;
     stamp_obtained: boolean;
     stamp?: Pick<Stamp, "id" | "name" | "rarity"> | null;
+    user_progress?: {
+      is_unlocked: boolean;
+      visited_at?: string | null;
+      stamp_obtained?: boolean;
+      total_points?: number;
+    };
   }>(`/spots/${id}/visit`, token, {
     method: "POST",
   });

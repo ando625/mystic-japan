@@ -20,6 +20,7 @@ export type Spot = {
   longitude: number;
   image_url?: string | null;
   images?: string[] | null;
+  media?: SpotMedia[] | null;
   music_url?: string | null;
   video_url?: string | null;
   rarity: number;
@@ -29,6 +30,24 @@ export type Spot = {
   visited_at?: string | null;
   unlock_condition?: string;
   stamp?: Stamp | null;
+  stamp_obtained?: boolean;
+  obtained_at?: string | null;
+  user_progress?: UserProgress | null;
+};
+
+export type SpotMedia = {
+  id: number | string;
+  type: "image" | "video";
+  url: string;
+  thumbnailUrl?: string | null;
+  alt?: string | null;
+};
+
+export type UserProgress = {
+  is_unlocked: boolean;
+  visited_at?: string | null;
+  stamp_obtained?: boolean;
+  total_points?: number;
 };
 
 export type Stamp = {
@@ -69,6 +88,8 @@ export type QuizAnswerResult = {
   stamp_obtained: boolean;
   stamp?: Stamp | null;
   spot_unlocked: boolean;
+  visited?: boolean;
+  user_progress?: UserProgress;
 };
 
 export type Achievement = {

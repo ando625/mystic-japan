@@ -8,7 +8,7 @@ import { useParams } from "next/navigation";
 import { answerQuiz, getSpot, getSpotQuizzes } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth-store";
 import { useProgressStore } from "@/stores/progress-store";
-import type { Quiz, QuizAnswerResult, QuizOption } from "@/types/domain";
+import type { Quiz, QuizAnswerResult, QuizOption, Spot } from "@/types/domain";
 import { cn } from "@/lib/utils";
 import { GlassPanel } from "@/components/ui/GlassPanel";
 import { GlowLink } from "@/components/ui/GlowButton";
@@ -42,6 +42,33 @@ export default function SpotQuizPage() {
     onSuccess: (result) => {
       setResults((current) => ({ ...current, [result.quiz_id]: result }));
       applyQuizResult(result);
+      if (result.is_correct) {
+        queryClient.setQueryData<Spot>(["spot", spotId, token], (current) => {
+          if (!current) {
+            return current;
+          }
+
+          return {
+            ...current,
+            is_unlocked: true,
+            visited_at: result.user_progress?.visited_at ?? current.visited_at,
+            user_progress: {
+              ...current.user_progress,
+              ...result.user_progress,
+              is_unlocked: true,
+              stamp_obtained: true,
+            },
+            stamp: current.stamp
+              ? {
+                  ...current.stamp,
+                  is_obtained: true,
+                  obtained_at: result.stamp?.obtained_at ?? current.stamp.obtained_at ?? new Date().toISOString(),
+                }
+              : result.stamp ?? current.stamp,
+            stamp_obtained: true,
+          };
+        });
+      }
       queryClient.invalidateQueries({ queryKey: ["spot-quizzes", spotId] });
       queryClient.invalidateQueries({ queryKey: ["spot", spotId] });
       queryClient.invalidateQueries({ queryKey: ["spots"] });

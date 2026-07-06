@@ -119,6 +119,7 @@ class ProgressService
             // without granting duplicate quiz points.
             if ($existing->is_correct) {
                 $spotUnlock = $this->unlockSpot($user, $quiz->spot);
+                $this->markVisited($spotUnlock['progress']);
                 $stampResult = $quiz->spot->stamp ? $this->obtainStamp($user, $quiz->spot->stamp) : null;
             }
 
@@ -147,6 +148,7 @@ class ProgressService
 
         if ($isCorrect) {
             $spotUnlock = $this->unlockSpot($user, $quiz->spot);
+            $this->markVisited($spotUnlock['progress']);
             $stampResult = $quiz->spot->stamp ? $this->obtainStamp($user, $quiz->spot->stamp) : null;
         }
 
@@ -159,6 +161,16 @@ class ProgressService
             'stamp_obtained' => $stampResult ? ! $stampResult['already_obtained'] : false,
             'spot_unlocked' => $isCorrect && ! $spotUnlock['already_unlocked'],
         ];
+    }
+
+    private function markVisited(UserSpot $progress): void
+    {
+        if ($progress->visited_at) {
+            return;
+        }
+
+        $progress->visited_at = now();
+        $progress->save();
     }
 
     public function totalPoints(User $user): int

@@ -47,7 +47,7 @@ class SpotController extends Controller
 
     public function show(Request $request, Spot $spot): SpotResource
     {
-        $spot->load('stamp');
+        $spot->load(['stamp', 'quizzes']);
         $this->markUnlocked(collect([$spot]), $request->user());
 
         return new SpotResource($spot);
@@ -61,6 +61,12 @@ class SpotController extends Controller
             'collection' => [
                 'spot_id' => $spot->id,
                 'unlocked_at' => $result['progress']->unlocked_at?->toISOString(),
+            ],
+            'user_progress' => [
+                'is_unlocked' => (bool) $result['progress']->is_unlocked,
+                'visited_at' => $result['progress']->visited_at?->toISOString(),
+                'stamp_obtained' => false,
+                'total_points' => $progress->totalPoints($request->user()),
             ],
             'gained_points' => $result['gained_points'],
             'new_achievements' => $result['new_achievements']->map(fn ($achievement) => [
@@ -84,6 +90,12 @@ class SpotController extends Controller
                 'name' => $result['stamp']->name,
                 'rarity' => $result['stamp']->rarity,
             ] : null,
+            'user_progress' => [
+                'is_unlocked' => (bool) $result['progress']->is_unlocked,
+                'visited_at' => $result['progress']->visited_at?->toISOString(),
+                'stamp_obtained' => $result['stamp_obtained'] || (bool) ($result['stamp'] && $request->user()->stamps()->whereKey($result['stamp']->id)->exists()),
+                'total_points' => $progress->totalPoints($request->user()),
+            ],
         ]);
     }
 

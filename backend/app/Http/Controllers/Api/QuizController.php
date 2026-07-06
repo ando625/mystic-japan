@@ -11,6 +11,7 @@ use App\Services\ProgressService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
 
 class QuizController extends Controller
@@ -46,6 +47,18 @@ class QuizController extends Controller
         ]);
 
         $result = $progress->answerQuiz($request->user(), $quiz->load('spot.stamp'), $validated['selected_option']);
+        $spotProgress = $quiz->spot->userSpots()
+            ->where('user_id', $request->user()->id)
+            ->first();
+        $stamp = $result['stamp'];
+
+        if ($stamp) {
+            $obtainedAt = $request->user()->stamps()
+                ->whereKey($stamp->id)
+                ->value('user_stamps.obtained_at');
+            $stamp->setAttribute('is_obtained', true);
+            $stamp->setAttribute('obtained_at', $obtainedAt);
+        }
 
         return response()->json([
             'quiz_id' => $quiz->id,
@@ -56,8 +69,18 @@ class QuizController extends Controller
             'reward_points' => $result['reward_points'],
             'explanation' => $quiz->explanation,
             'stamp_obtained' => $result['stamp_obtained'],
-            'stamp' => $result['stamp'] ? new StampResource($result['stamp']->load('spot')) : null,
+            'stamp' => $stamp ? new StampResource($stamp->load('spot')) : null,
             'spot_unlocked' => $result['spot_unlocked'],
+            'visited' => (bool) $quiz->spot->userSpots()
+                ->where('user_id', $request->user()->id)
+                ->whereNotNull('visited_at')
+                ->exists(),
+            'user_progress' => [
+                'is_unlocked' => (bool) $spotProgress?->is_unlocked,
+                'visited_at' => $spotProgress?->visited_at ? Carbon::parse($spotProgress->visited_at)->toISOString() : null,
+                'stamp_obtained' => $result['stamp_obtained'] || (bool) ($stamp && $request->user()->stamps()->whereKey($stamp->id)->exists()),
+                'total_points' => $progress->totalPoints($request->user()),
+            ],
         ], $result['already_answered'] ? 200 : 201);
     }
 }
