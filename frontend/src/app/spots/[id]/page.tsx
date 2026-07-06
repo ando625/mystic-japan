@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Bot, CheckCircle2, Gem, ImageIcon, ScrollText, Sparkles } from "lucide-react";
+import { ArrowLeft, Bot, CheckCircle2, Gem, ScrollText, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { getSpot, unlockSpot, visitSpot } from "@/lib/api";
@@ -12,7 +12,6 @@ import { categoryLabel } from "@/data/categories";
 import { AiGuideChat } from "@/components/spot/AiGuideChat";
 import { AnimatedSpotImage } from "@/components/spot/AnimatedSpotImage";
 import { BgmPanel } from "@/components/spot/BgmPanel";
-import { CinematicSpotModal } from "@/components/spot/CinematicSpotModal";
 import { ImageThumbnailList } from "@/components/spot/ImageThumbnailList";
 import { SpotImage } from "@/components/spot/SpotImage";
 import { SpotStoryTabs } from "@/components/spot/SpotStoryTabs";
@@ -29,7 +28,6 @@ export default function SpotDetailPage() {
   const markSpotUnlocked = useProgressStore((state) => state.markSpotUnlocked);
   const queryClient = useQueryClient();
   const [showUnlock, setShowUnlock] = useState(false);
-  const [showCinematic, setShowCinematic] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const { data: spot, isLoading } = useQuery({
@@ -102,7 +100,6 @@ export default function SpotDetailPage() {
         points={unlock.data?.gained_points ?? spot.mystic_points}
         spotName={spot.name}
       />
-      <CinematicSpotModal imageSrc={mainImage} open={showCinematic} spot={spot} onClose={() => setShowCinematic(false)} />
       <Link className="relative z-10 mb-5 inline-flex items-center gap-2 text-sm text-cyan-100/80 hover:text-white" href="/spots">
         <ArrowLeft className="h-4 w-4" />
         図鑑へ戻る
@@ -111,7 +108,7 @@ export default function SpotDetailPage() {
       <section className="relative z-10 grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(380px,0.65fr)]">
         <div className="space-y-4">
           <div className="relative -mx-4 overflow-hidden md:-mx-8 xl:mx-0">
-            <div className="relative min-h-[520px] overflow-hidden xl:rounded-[8px]">
+            <div className="relative min-h-[640px] overflow-hidden xl:rounded-[8px]">
               <AnimatedSpotImage alt={spot.name} className="bg-transparent" priority src={mainImage} />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/18 to-slate-950/18" />
               <div className="absolute bottom-0 left-0 right-0 p-5 md:p-8">
@@ -131,45 +128,30 @@ export default function SpotDetailPage() {
           </div>
 
           <ImageThumbnailList images={images} selected={mainImage ?? ""} onSelect={setSelectedImage} />
-
-          <GlassPanel className="p-4">
-            <div className="grid gap-3 sm:grid-cols-[180px_1fr]">
-              <button
-                className="grid min-h-16 place-items-center rounded-[8px] border border-violet-300/20 bg-slate-950/42 text-xs text-slate-200 transition hover:border-cyan-100/45 hover:bg-cyan-500/12"
-                onClick={() => setShowCinematic(true)}
-                type="button"
-              >
-                <ImageIcon className="mb-1 h-5 w-5 text-cyan-100" />
-                幻想鑑賞
-              </button>
-              <div className="min-w-0">
-                <BgmPanel embedded spot={spot} />
-              </div>
-            </div>
-            <div className="mt-4">
-              {token ? (
-                <GlowButton className="w-full" onClick={() => unlock.mutate()} disabled={unlock.isPending}>
-                  <Gem className="h-4 w-4" />
-                  {unlock.isPending ? "解放中..." : spot.is_unlocked ? "解放済み" : "この絶景を解放する"}
-                </GlowButton>
-              ) : (
-                <GlowLink className="w-full" href="/login">
-                  <Gem className="h-4 w-4" />
-                  ログインして解放する
-                </GlowLink>
-              )}
-              {!spot.is_unlocked ? (
-                <p className="mt-3 text-xs leading-5 text-violet-100/80">{spot.unlock_condition}</p>
-              ) : null}
-              {unlock.isSuccess ? (
-                <p className="mt-3 text-center text-sm text-violet-100">神秘ポイントを獲得しました。</p>
-              ) : null}
-            </div>
-          </GlassPanel>
         </div>
 
         <div className="space-y-4">
           <AiGuideChat compact spot={spot} />
+          <BgmPanel spot={spot} />
+          <GlassPanel className="p-4">
+            {token ? (
+              <GlowButton className="w-full" onClick={() => unlock.mutate()} disabled={unlock.isPending || spot.is_unlocked}>
+                <Gem className="h-4 w-4" />
+                {unlock.isPending ? "解放中..." : spot.is_unlocked ? "解放済み" : "この絶景を解放する"}
+              </GlowButton>
+            ) : (
+              <GlowLink className="w-full" href="/login">
+                <Gem className="h-4 w-4" />
+                ログインして解放する
+              </GlowLink>
+            )}
+            {!spot.is_unlocked ? (
+              <p className="mt-3 text-xs leading-5 text-violet-100/80">{spot.unlock_condition}</p>
+            ) : null}
+            {unlock.isSuccess ? (
+              <p className="mt-3 text-center text-sm text-violet-100">神秘ポイントを獲得しました。</p>
+            ) : null}
+          </GlassPanel>
           <GlassPanel glow={Boolean(spot.stamp?.is_obtained)} className="p-4">
             <div className="grid gap-4 sm:grid-cols-[120px_1fr]">
               {spot.stamp ? <StampSeal stamp={spot.stamp} locked={!spot.stamp.is_obtained} /> : null}
