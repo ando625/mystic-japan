@@ -17,7 +17,7 @@ class CollectionAndAchievementTest extends TestCase
         $this->seed();
 
         $user = User::factory()->create();
-        $spot = Spot::query()->firstOrFail();
+        $spot = Spot::query()->where('is_initially_unlocked', false)->firstOrFail();
         Sanctum::actingAs($user);
 
         $this->postJson("/api/spots/{$spot->id}/unlock")->assertCreated();
@@ -25,9 +25,9 @@ class CollectionAndAchievementTest extends TestCase
         $response = $this->getJson('/api/collections');
 
         $response->assertOk()
-            ->assertJsonPath('summary.unlocked_count', 1)
+            ->assertJsonPath('summary.unlocked_count', 3)
             ->assertJsonPath('summary.total_spots', 14)
-            ->assertJsonCount(1, 'data');
+            ->assertJsonCount(3, 'data');
     }
 
     public function test_achievement_list_returns_progress(): void

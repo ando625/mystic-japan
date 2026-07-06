@@ -2,11 +2,12 @@
 
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Bot, Gem, Heart, ImageIcon, Play, Sparkles } from "lucide-react";
+import { ArrowLeft, Bot, CheckCircle2, Gem, ImageIcon, ScrollText, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { getSpot, unlockSpot } from "@/lib/api";
+import { getSpot, unlockSpot, visitSpot } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth-store";
+import { useProgressStore } from "@/stores/progress-store";
 import { categoryLabel } from "@/data/categories";
 import { AiGuideChat } from "@/components/spot/AiGuideChat";
 import { AnimatedSpotImage } from "@/components/spot/AnimatedSpotImage";
@@ -18,11 +19,13 @@ import { UnlockModal } from "@/components/spot/UnlockModal";
 import { GlassPanel } from "@/components/ui/GlassPanel";
 import { GlowButton, GlowLink } from "@/components/ui/GlowButton";
 import { RarityStars } from "@/components/ui/RarityStars";
+import { StampSeal } from "@/components/stamp/StampSeal";
 
 export default function SpotDetailPage() {
   const params = useParams<{ id: string }>();
   const spotId = Number(params.id);
   const { token } = useAuthStore();
+  const markSpotUnlocked = useProgressStore((state) => state.markSpotUnlocked);
   const queryClient = useQueryClient();
   const [showUnlock, setShowUnlock] = useState(false);
   const [showCinematic, setShowCinematic] = useState(false);
@@ -42,12 +45,29 @@ export default function SpotDetailPage() {
 
       return unlockSpot(spotId, token);
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       setShowUnlock(true);
+      markSpotUnlocked(spotId, result.gained_points);
       queryClient.invalidateQueries({ queryKey: ["spot", spotId] });
       queryClient.invalidateQueries({ queryKey: ["spots"] });
       queryClient.invalidateQueries({ queryKey: ["collection"] });
       queryClient.invalidateQueries({ queryKey: ["achievements"] });
+    },
+  });
+
+  const visit = useMutation({
+    mutationFn: () => {
+      if (!token) {
+        throw new Error("LOGIN_REQUIRED");
+      }
+
+      return visitSpot(spotId, token);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["spot", spotId] });
+      queryClient.invalidateQueries({ queryKey: ["spots"] });
+      queryClient.invalidateQueries({ queryKey: ["stamps"] });
+      queryClient.invalidateQueries({ queryKey: ["collection"] });
     },
   });
 
@@ -77,7 +97,7 @@ export default function SpotDetailPage() {
         points={unlock.data?.gained_points ?? spot.mystic_points}
         spotName={spot.name}
       />
-      <CinematicSpotModal open={showCinematic} spot={spot} onClose={() => setShowCinematic(false)} />
+      <CinematicSpotModal imageSrc={mainImage} open={showCinematic} spot={spot} onClose={() => setShowCinematic(false)} />
       <Link className="mb-5 inline-flex items-center gap-2 text-sm text-cyan-100/80 hover:text-white" href="/spots">
         <ArrowLeft className="h-4 w-4" />
         図鑑へ戻る
@@ -85,28 +105,30 @@ export default function SpotDetailPage() {
 
       <section className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(380px,0.65fr)]">
         <div className="space-y-4">
-          <GlassPanel glow className="overflow-hidden">
-            <div className="relative aspect-[16/10] min-h-[420px]">
-              <AnimatedSpotImage alt={spot.name} priority src={mainImage} />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/8 to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-5 md:p-7">
-                <p className="text-sm text-cyan-100/75">{categoryLabel[spot.category]} / {spot.prefecture}</p>
-                <h1 className="mt-2 text-5xl font-semibold text-white text-glow md:text-7xl">{spot.name}</h1>
-                <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-100/82">{spot.description}</p>
-                <div className="mt-4 flex flex-wrap items-center gap-4">
-                  <RarityStars value={spot.rarity} />
-                  <span className="rounded-full border border-violet-300/30 bg-violet-500/18 px-3 py-1 text-sm text-violet-100">
-                    {spot.mystic_points} pt
-                  </span>
+          <div className="relative -mx-4 overflow-hidden md:-mx-8 xl:mx-0">
+            <div className="relative min-h-[520px] overflow-hidden xl:rounded-[8px]">
+              <AnimatedSpotImage alt={spot.name} className="bg-transparent" priority src={mainImage} />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/18 to-slate-950/18" />
+              <div className="absolute bottom-0 left-0 right-0 p-5 md:p-8">
+                <div className="max-w-3xl">
+                  <p className="text-sm text-cyan-100/75">{categoryLabel[spot.category]} / {spot.prefecture}</p>
+                  <h1 className="mt-2 text-5xl font-semibold text-white text-glow md:text-7xl">{spot.name}</h1>
+                  <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-100/82">{spot.description}</p>
+                  <div className="mt-4 flex flex-wrap items-center gap-4">
+                    <RarityStars value={spot.rarity} />
+                    <span className="rounded-full border border-violet-300/30 bg-violet-500/18 px-3 py-1 text-sm text-violet-100">
+                      {spot.mystic_points} pt
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
-          </GlassPanel>
+          </div>
 
           <ImageThumbnailList images={images} selected={mainImage ?? ""} onSelect={setSelectedImage} />
 
           <GlassPanel className="p-4">
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="grid gap-3 sm:grid-cols-[180px_1fr]">
               <button
                 className="grid min-h-16 place-items-center rounded-[8px] border border-violet-300/20 bg-slate-950/42 text-xs text-slate-200 transition hover:border-cyan-100/45 hover:bg-cyan-500/12"
                 onClick={() => setShowCinematic(true)}
@@ -115,20 +137,11 @@ export default function SpotDetailPage() {
                 <ImageIcon className="mb-1 h-5 w-5 text-cyan-100" />
                 幻想鑑賞
               </button>
-              <button className="grid min-h-16 place-items-center rounded-[8px] border border-violet-300/20 bg-slate-950/42 text-xs text-slate-200" type="button">
-                <Play className="mb-1 h-5 w-5 text-cyan-100" />
-                BGM
-              </button>
-              <button className="grid min-h-16 place-items-center rounded-[8px] border border-violet-300/20 bg-slate-950/42 text-xs text-slate-200" type="button">
-                <Sparkles className="mb-1 h-5 w-5 text-cyan-100" />
-                記憶
-              </button>
-              <button className="grid min-h-16 place-items-center rounded-[8px] border border-violet-300/20 bg-slate-950/42 text-xs text-slate-200" type="button">
-                <Heart className="mb-1 h-5 w-5 text-cyan-100" />
-                保存
-              </button>
+              <div className="min-w-0">
+                <BgmPanel embedded spot={spot} />
+              </div>
             </div>
-            <div className="mt-5">
+            <div className="mt-4">
               {token ? (
                 <GlowButton className="w-full" onClick={() => unlock.mutate()} disabled={unlock.isPending}>
                   <Gem className="h-4 w-4" />
@@ -140,6 +153,9 @@ export default function SpotDetailPage() {
                   ログインして解放する
                 </GlowLink>
               )}
+              {!spot.is_unlocked ? (
+                <p className="mt-3 text-xs leading-5 text-violet-100/80">{spot.unlock_condition}</p>
+              ) : null}
               {unlock.isSuccess ? (
                 <p className="mt-3 text-center text-sm text-violet-100">神秘ポイントを獲得しました。</p>
               ) : null}
@@ -149,8 +165,46 @@ export default function SpotDetailPage() {
 
         <div className="space-y-4">
           <AiGuideChat compact spot={spot} />
+          <GlassPanel glow={Boolean(spot.stamp?.is_obtained)} className="p-4">
+            <div className="grid gap-4 sm:grid-cols-[120px_1fr]">
+              {spot.stamp ? <StampSeal stamp={spot.stamp} locked={!spot.stamp.is_obtained} /> : null}
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 text-cyan-100">
+                  <ScrollText className="h-5 w-5" />
+                  <p className="text-xs tracking-[0.3em]">GOSHUIN</p>
+                </div>
+                <h2 className="mt-2 text-xl font-semibold text-white">御朱印の記憶</h2>
+                <p className="mt-2 text-sm leading-6 text-slate-300">
+                  {spot.stamp?.is_obtained
+                    ? `${spot.stamp.name}を授与済みです。`
+                    : "訪問済みにする、または神話クイズに正解すると御朱印を獲得できます。"}
+                </p>
+                <div className="mt-4 grid gap-2">
+                  {token ? (
+                    <button
+                      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[8px] border border-cyan-200/25 bg-cyan-500/10 px-4 text-sm text-cyan-50 transition hover:bg-cyan-500/18 disabled:opacity-60"
+                      disabled={visit.isPending}
+                      onClick={() => visit.mutate()}
+                      type="button"
+                    >
+                      <CheckCircle2 className="h-4 w-4" />
+                      {spot.visited_at ? "訪問済み" : visit.isPending ? "記録中..." : "訪問済みにする"}
+                    </button>
+                  ) : (
+                    <GlowLink href="/login">ログインして御朱印を集める</GlowLink>
+                  )}
+                  <GlowLink href={`/spots/${spot.id}/quiz`}>
+                    <Sparkles className="h-4 w-4" />
+                    神話クイズに挑戦
+                  </GlowLink>
+                </div>
+                {visit.data?.stamp_obtained ? (
+                  <p className="mt-3 text-sm text-violet-100">御朱印「{visit.data.stamp?.name}」を獲得しました。</p>
+                ) : null}
+              </div>
+            </div>
+          </GlassPanel>
           <SpotStoryTabs spot={spot} />
-          <BgmPanel spot={spot} />
           <Link
             className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[8px] border border-cyan-200/25 bg-cyan-500/10 text-sm text-cyan-50 transition hover:bg-cyan-500/18"
             href={`/spots/${spot.id}/guide`}

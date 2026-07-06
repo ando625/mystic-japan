@@ -62,6 +62,23 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
+    public function spotProgress(): HasMany
+    {
+        return $this->hasMany(UserSpot::class);
+    }
+
+    public function stamps(): BelongsToMany
+    {
+        return $this->belongsToMany(Stamp::class, 'user_stamps')
+            ->withPivot('obtained_at')
+            ->withTimestamps();
+    }
+
+    public function quizAnswers(): HasMany
+    {
+        return $this->hasMany(QuizAnswer::class);
+    }
+
     public function achievements(): BelongsToMany
     {
         return $this->belongsToMany(Achievement::class, 'user_achievements')

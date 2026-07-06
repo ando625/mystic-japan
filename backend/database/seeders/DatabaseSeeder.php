@@ -18,6 +18,8 @@ class DatabaseSeeder extends Seeder
         $this->call([
             DemoUserSeeder::class,
             SpotSeeder::class,
+            StampSeeder::class,
+            QuizSeeder::class,
             AchievementSeeder::class,
         ]);
     }

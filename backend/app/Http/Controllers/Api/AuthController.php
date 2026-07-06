@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Spot;
 use App\Models\User;
-use App\Services\AchievementService;
+use App\Services\ProgressService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -13,7 +13,7 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    public function register(Request $request): JsonResponse
+    public function register(Request $request, ProgressService $progress): JsonResponse
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -22,6 +22,7 @@ class AuthController extends Controller
         ]);
 
         $user = User::query()->create($validated);
+        $progress->ensureInitialSpots($user);
 
         return response()->json([
             'user' => $this->userPayload($user),
@@ -29,7 +30,7 @@ class AuthController extends Controller
         ], 201);
     }
 
-    public function login(Request $request): JsonResponse
+    public function login(Request $request, ProgressService $progress): JsonResponse
     {
         $validated = $request->validate([
             'email' => ['required', 'email'],
@@ -43,6 +44,8 @@ class AuthController extends Controller
                 'email' => ['メールアドレスまたはパスワードが正しくありません。'],
             ]);
         }
+
+        $progress->ensureInitialSpots($user);
 
         return response()->json([
             'user' => $this->userPayload($user),
@@ -59,9 +62,10 @@ class AuthController extends Controller
         ]);
     }
 
-    public function me(Request $request, AchievementService $achievements): JsonResponse
+    public function me(Request $request, ProgressService $progress): JsonResponse
     {
         $user = $request->user();
+        $progress->ensureInitialSpots($user);
         $totalSpots = Spot::query()->count();
         $unlockedCount = $user->collections()->count();
 
@@ -71,7 +75,7 @@ class AuthController extends Controller
                 'unlocked_count' => $unlockedCount,
                 'total_spots' => $totalSpots,
                 'completion_rate' => $totalSpots === 0 ? 0 : round(($unlockedCount / $totalSpots) * 100, 1),
-                'mystic_points' => $achievements->mysticPointsTotal($user),
+                'mystic_points' => $progress->totalPoints($user),
                 'achievement_count' => $user->achievements()->count(),
             ],
         ]);

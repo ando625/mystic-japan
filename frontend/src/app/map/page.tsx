@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useQuery } from "@tanstack/react-query";
 import { Compass } from "lucide-react";
 import { getSpots } from "@/lib/api";
+import { useAuthStore } from "@/stores/auth-store";
 import { GlassPanel } from "@/components/ui/GlassPanel";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { SpotCard } from "@/components/spot/SpotCard";
@@ -14,9 +15,10 @@ const MapView = dynamic(() => import("@/components/map/MysticMap").then((mod) =>
 });
 
 export default function MapPage() {
+  const { token } = useAuthStore();
   const { data: spots = [] } = useQuery({
-    queryKey: ["spots"],
-    queryFn: () => getSpots(),
+    queryKey: ["spots", token],
+    queryFn: () => getSpots(token),
   });
 
   return (

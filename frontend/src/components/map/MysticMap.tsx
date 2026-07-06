@@ -29,7 +29,7 @@ function createPinIcon(spot: Spot) {
   return L.divIcon({
     className: "",
     html: `
-      <span class="mystic-pin-wrap">
+      <span class="mystic-pin-wrap ${spot.is_unlocked ? "is-unlocked" : "is-locked"}">
         <span class="mystic-pin"></span>
         <span class="mystic-pin-label">${escapeHtml(spot.name)}</span>
       </span>
@@ -97,6 +97,7 @@ export function MysticMap({ spots }: { spots: Spot[] }) {
               <h3 className="text-base font-semibold">{spot.name}</h3>
               <RarityStars value={spot.rarity} />
               <p className="text-xs leading-5 text-slate-300">{spot.prefecture}</p>
+              {!spot.is_unlocked ? <p className="text-xs text-violet-200">未解放: 詳細で条件を確認</p> : null}
               <Link className="text-sm font-medium text-violet-200" href={`/spots/${spot.id}`}>
                 詳細へ
               </Link>

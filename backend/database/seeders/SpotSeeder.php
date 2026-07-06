@@ -35,11 +35,12 @@ class SpotSeeder extends Seeder
                 'latitude' => 43.4936000,
                 'longitude' => 142.6146000,
                 'image_url' => '/images/spots/BliePond.png',
-                'images' => ['/images/spots/BliePond.png', '/images/spots/BliePond2.png', '/images/spots/BliePond3.png', '/images/spots/BliePond4.png', '/images/spots/aonoike.png', '/images/spots/aonoike2.png'],
+                'images' => ['/images/spots/BliePond.png', '/images/spots/BliePond2.png', '/images/spots/BliePond3.png', '/images/spots/aonoike.png', '/images/spots/aonoike2.png'],
                 'music_url' => '/music/aonoike.mp3',
                 'video_url' => null,
                 'rarity' => 4,
                 'mystic_points' => 100,
+                'is_initially_unlocked' => true,
             ],
             [
                 'name' => '神の子池',
@@ -58,6 +59,7 @@ class SpotSeeder extends Seeder
                 'video_url' => null,
                 'rarity' => 4,
                 'mystic_points' => 100,
+                'is_initially_unlocked' => true,
             ],
             [
                 'name' => '白神山地',

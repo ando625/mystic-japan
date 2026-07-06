@@ -1,22 +1,11 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { BookOpen, Map, Play, Sparkles } from "lucide-react";
+import { BookOpen, Map, ScrollText, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
-import { getSpots } from "@/lib/api";
 import { GlowLink } from "@/components/ui/GlowButton";
-import { GlassPanel } from "@/components/ui/GlassPanel";
-import { SpotCard } from "@/components/spot/SpotCard";
-import { SpotImage } from "@/components/spot/SpotImage";
+import { AnimatedSpotImage } from "@/components/spot/AnimatedSpotImage";
 
 export default function Home() {
-  const { data: spots = [] } = useQuery({
-    queryKey: ["spots"],
-    queryFn: () => getSpots(),
-  });
-  const featured = spots.slice(0, 4);
-  const heroSpot = spots[0];
-
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-8 md:px-8 lg:py-10">
       <motion.section
@@ -47,42 +36,45 @@ export default function Home() {
           </div>
         </div>
 
-        {heroSpot ? (
-          <GlassPanel glow className="overflow-hidden">
-            <div className="relative aspect-[4/3]">
-              <SpotImage alt={heroSpot.name} src={heroSpot.image_url} />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/8 to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-5">
-                <p className="text-sm text-cyan-100/75">{heroSpot.region}</p>
-                <h2 className="mt-1 text-3xl font-semibold text-white text-glow">{heroSpot.name}</h2>
-                <p className="mt-2 text-sm leading-6 text-slate-200/80">{heroSpot.description}</p>
-              </div>
-            </div>
-          </GlassPanel>
-        ) : null}
-      </motion.section>
-
-      <section className="mt-10 grid gap-4 lg:grid-cols-[0.74fr_0.26fr]">
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {featured.map((spot) => (
-            <SpotCard key={spot.id} compact spot={spot} />
-          ))}
-        </div>
-        <GlassPanel className="flex flex-col justify-between p-5">
-          <div>
-            <div className="mb-4 inline-flex rounded-full border border-violet-300/30 bg-violet-500/15 p-3 text-violet-100">
-              <Sparkles className="h-5 w-5" />
-            </div>
-            <h2 className="text-xl font-semibold text-white">神秘ポイント</h2>
-            <p className="mt-3 text-sm leading-6 text-slate-300">
-              スポットを解放するとポイントと称号が進行します。Phase3ではUI基盤、解放API連携は詳細画面から確認できます。
+        <div className="relative min-h-[420px] overflow-hidden rounded-[8px] shadow-[0_0_80px_rgba(79,70,229,0.26)]">
+          <AnimatedSpotImage alt="日本神秘紀行の幻想世界" priority src="/images/home/home.png" />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/82 via-slate-950/10 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 p-5 md:p-7">
+            <p className="text-xs uppercase tracking-[0.36em] text-cyan-100/70">Gate of Memories</p>
+            <h2 className="mt-2 text-3xl font-semibold text-white text-glow md:text-4xl">神域への扉</h2>
+            <p className="mt-3 max-w-xl text-sm leading-7 text-slate-100/78">
+              ここは旅の入口。地図、御朱印、神話クイズを通じて、日本各地に眠る記憶を解放していきます。
             </p>
           </div>
-          <div className="mt-6 flex items-center gap-3 text-violet-100">
-            <Play className="h-5 w-5" />
-            <span className="text-sm">BGM UI ready</span>
-          </div>
-        </GlassPanel>
+        </div>
+      </motion.section>
+
+      <section className="mt-10 grid gap-4 md:grid-cols-3">
+        {[
+          { title: "地図から巡る", body: "日本地図上の神域を選び、解放条件や物語を確認します。", icon: Map, href: "/map" },
+          { title: "御朱印を集める", body: "訪問やクイズ正解で、幻想御朱印が御朱印帳に刻まれます。", icon: ScrollText, href: "/stamps" },
+          { title: "神話を解く", body: "神話・歴史を読んでクイズへ。正解で神力ポイントが増えます。", icon: Sparkles, href: "/spots" },
+        ].map((item) => {
+          const Icon = item.icon;
+
+          return (
+            <motion.div
+              key={item.title}
+              className="rounded-[8px] border border-violet-300/18 bg-slate-950/38 p-5 backdrop-blur-xl transition hover:border-violet-200/45 hover:bg-violet-500/12"
+              whileHover={{ y: -4 }}
+            >
+              <div className="mb-4 inline-flex rounded-full border border-violet-300/30 bg-violet-500/15 p-3 text-violet-100">
+                <Icon className="h-5 w-5" />
+              </div>
+              <h2 className="text-xl font-semibold text-white">{item.title}</h2>
+              <p className="mt-3 min-h-16 text-sm leading-6 text-slate-300">{item.body}</p>
+              <GlowLink className="mt-4 w-full bg-slate-950/35" href={item.href}>
+                <BookOpen className="h-4 w-4" />
+                開く
+              </GlowLink>
+            </motion.div>
+          );
+        })}
       </section>
     </main>
   );

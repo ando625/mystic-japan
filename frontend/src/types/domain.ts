@@ -24,7 +24,51 @@ export type Spot = {
   video_url?: string | null;
   rarity: number;
   mystic_points: number;
+  is_initially_unlocked?: boolean;
   is_unlocked: boolean;
+  visited_at?: string | null;
+  unlock_condition?: string;
+  stamp?: Stamp | null;
+};
+
+export type Stamp = {
+  id: number;
+  spot_id: number;
+  spot_name?: string | null;
+  region?: string | null;
+  name: string;
+  description: string;
+  image_path?: string | null;
+  rarity: number;
+  is_obtained: boolean;
+  obtained_at?: string | null;
+};
+
+export type QuizOption = "A" | "B" | "C" | "D";
+
+export type Quiz = {
+  id: number;
+  spot_id: number;
+  question: string;
+  options: Record<QuizOption, string>;
+  explanation?: string;
+  reward_points: number;
+  answered_at?: string | null;
+  selected_option?: QuizOption | null;
+  is_correct?: boolean | null;
+};
+
+export type QuizAnswerResult = {
+  quiz_id: number;
+  selected_option: QuizOption;
+  correct_option: QuizOption;
+  is_correct: boolean;
+  already_answered: boolean;
+  reward_points: number;
+  explanation: string;
+  stamp_obtained: boolean;
+  stamp?: Stamp | null;
+  spot_unlocked: boolean;
 };
 
 export type Achievement = {

@@ -1,6 +1,6 @@
 import { fallbackAchievements } from "@/data/fallback-achievements";
 import { fallbackSpots } from "@/data/fallback-spots";
-import type { Achievement, CollectionSummary, Spot, User } from "@/types/domain";
+import type { Achievement, CollectionSummary, Quiz, QuizAnswerResult, QuizOption, Spot, Stamp, User } from "@/types/domain";
 
 function resolveApiBaseUrl() {
   const configuredApiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -79,6 +79,42 @@ export async function unlockSpot(id: number, token: string) {
     already_unlocked: boolean;
   }>(`/spots/${id}/unlock`, token, {
     method: "POST",
+  });
+}
+
+export async function visitSpot(id: number, token: string) {
+  return request<{
+    spot_id: number;
+    visited_at: string;
+    stamp_obtained: boolean;
+    stamp?: Pick<Stamp, "id" | "name" | "rarity"> | null;
+  }>(`/spots/${id}/visit`, token, {
+    method: "POST",
+  });
+}
+
+export async function getStamps(token?: string | null): Promise<Stamp[]> {
+  try {
+    const response = await request<JsonApiResponse<Stamp[]>>("/stamps", token);
+    return response.data;
+  } catch {
+    return [];
+  }
+}
+
+export async function getSpotQuizzes(spotId: number, token?: string | null): Promise<Quiz[]> {
+  try {
+    const response = await request<JsonApiResponse<Quiz[]>>(`/spots/${spotId}/quizzes`, token);
+    return response.data;
+  } catch {
+    return [];
+  }
+}
+
+export async function answerQuiz(quizId: number, selectedOption: QuizOption, token: string): Promise<QuizAnswerResult> {
+  return request<QuizAnswerResult>(`/quizzes/${quizId}/answer`, token, {
+    method: "POST",
+    body: JSON.stringify({ selected_option: selectedOption }),
   });
 }
 

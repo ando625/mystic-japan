@@ -128,6 +128,16 @@ a {
   box-shadow: 0 0 26px rgba(168, 85, 247, 0.8), 0 0 52px rgba(56, 189, 248, 0.3);
 }
 
+.mystic-pin-wrap.is-locked {
+  opacity: 0.68;
+}
+
+.mystic-pin-wrap.is-locked .mystic-pin::before {
+  border-color: rgba(203, 213, 225, 0.64);
+  background: radial-gradient(circle, rgba(203, 213, 225, 0.86), rgba(100, 116, 139, 0.55));
+  box-shadow: 0 0 18px rgba(148, 163, 184, 0.45);
+}
+
 .mystic-pin::after {
   content: "";
   position: absolute;
@@ -144,6 +154,11 @@ a {
 
 .glow-pulse {
   animation: glow-pulse 2.7s ease-in-out infinite;
+}
+
+.writing-vertical {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
 }
 
 @keyframes ripple {

@@ -6,13 +6,13 @@ import { useBgmStore } from "@/stores/bgm-store";
 import { GlassPanel } from "@/components/ui/GlassPanel";
 import { GlowButton } from "@/components/ui/GlowButton";
 import { SpotImage } from "@/components/spot/SpotImage";
+import { cn } from "@/lib/utils";
 
-export function BgmPanel({ spot }: { spot: Spot }) {
+export function BgmPanel({ spot, embedded = false }: { spot: Spot; embedded?: boolean }) {
   const { currentTrack, isPlaying, pause, playSpot } = useBgmStore();
   const active = currentTrack?.id === `spot-${spot.id}` && isPlaying;
-
-  return (
-    <GlassPanel glow className="p-3">
+  const content = (
+    <>
       <div className="flex items-center gap-3">
         <div className="h-14 w-14 overflow-hidden rounded-full border border-violet-200/40 shadow-[0_0_22px_rgba(168,85,247,0.32)]">
           <SpotImage alt={`${spot.name} BGM`} src={spot.image_url} />
@@ -29,6 +29,20 @@ export function BgmPanel({ spot }: { spot: Spot }) {
       <div className="mt-3 h-1 overflow-hidden rounded-full bg-slate-800">
         <div className="h-full w-1/3 rounded-full bg-violet-300 shadow-[0_0_18px_rgba(168,85,247,0.8)]" />
       </div>
+    </>
+  );
+
+  if (embedded) {
+    return (
+      <div className={cn("rounded-[8px] border border-violet-300/14 bg-slate-950/28 p-3")}>
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <GlassPanel glow className="p-3">
+      {content}
     </GlassPanel>
   );
 }

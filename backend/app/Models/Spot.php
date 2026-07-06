@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Spot extends Model
 {
@@ -39,6 +40,7 @@ class Spot extends Model
         'video_url',
         'rarity',
         'mystic_points',
+        'is_initially_unlocked',
     ];
 
     protected function casts(): array
@@ -49,11 +51,27 @@ class Spot extends Model
             'images' => 'array',
             'rarity' => 'integer',
             'mystic_points' => 'integer',
+            'is_initially_unlocked' => 'boolean',
         ];
     }
 
     public function collections(): HasMany
     {
         return $this->hasMany(Collection::class);
+    }
+
+    public function userSpots(): HasMany
+    {
+        return $this->hasMany(UserSpot::class);
+    }
+
+    public function stamp(): HasOne
+    {
+        return $this->hasOne(Stamp::class);
+    }
+
+    public function quizzes(): HasMany
+    {
+        return $this->hasMany(Quiz::class);
     }
 }

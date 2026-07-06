@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen, Home, Map, Settings, Sparkles } from "lucide-react";
+import { BookOpen, Home, Map, ScrollText, Settings, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -9,6 +9,7 @@ const items = [
   { href: "/", label: "ホーム", icon: Home },
   { href: "/map", label: "地図", icon: Map },
   { href: "/spots", label: "図鑑", icon: BookOpen },
+  { href: "/stamps", label: "御朱印", icon: ScrollText },
   { href: "/achievements", label: "称号", icon: Sparkles },
   { href: "/login", label: "旅人", icon: Settings },
 ];
@@ -18,7 +19,7 @@ export function BottomNav() {
 
   return (
     <nav className="fixed inset-x-3 bottom-3 z-40 mx-auto max-w-3xl rounded-[8px] border border-violet-300/20 bg-slate-950/72 px-2 py-2 shadow-[0_0_38px_rgba(30,41,59,0.8)] backdrop-blur-xl">
-      <div className="grid grid-cols-5 gap-1">
+      <div className="grid grid-cols-6 gap-1">
         {items.map((item) => {
           const Icon = item.icon;
           const active = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));

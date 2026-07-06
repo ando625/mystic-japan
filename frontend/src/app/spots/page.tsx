@@ -1,9 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { categories } from "@/data/categories";
 import { getSpots } from "@/lib/api";
+import { useAuthStore } from "@/stores/auth-store";
+import { useProgressStore } from "@/stores/progress-store";
 import type { SpotCategory } from "@/types/domain";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -11,10 +13,16 @@ import { SpotCard } from "@/components/spot/SpotCard";
 
 export default function SpotsPage() {
   const [category, setCategory] = useState<SpotCategory | "all">("all");
+  const { token } = useAuthStore();
+  const syncFromSpots = useProgressStore((state) => state.syncFromSpots);
   const { data: spots = [] } = useQuery({
-    queryKey: ["spots"],
-    queryFn: () => getSpots(),
+    queryKey: ["spots", token],
+    queryFn: () => getSpots(token),
   });
+
+  useEffect(() => {
+    syncFromSpots(spots);
+  }, [spots, syncFromSpots]);
 
   const filtered = useMemo(
     () => (category === "all" ? spots : spots.filter((spot) => spot.category === category)),
