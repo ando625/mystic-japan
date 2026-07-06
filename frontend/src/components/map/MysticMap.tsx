@@ -36,7 +36,7 @@ function createPinIcon(spot: Spot) {
     `,
     iconSize: [132, 42],
     iconAnchor: [17, 17],
-    popupAnchor: [0, -18],
+    popupAnchor: [42, 28],
   });
 }
 
@@ -91,7 +91,15 @@ export function MysticMap({ spots }: { spots: Spot[] }) {
       />
       {markers.map(({ spot, position }) => (
         <Marker key={spot.id} icon={createPinIcon(spot)} position={position}>
-          <Popup className="mystic-popup">
+          <Popup
+            autoPan
+            autoPanPadding={[72, 120]}
+            className="mystic-popup"
+            closeButton={false}
+            keepInView
+            maxWidth={260}
+            minWidth={210}
+          >
             <div className="min-w-52 space-y-2 bg-slate-950 text-slate-100">
               <p className="text-xs text-cyan-200">{spot.region}</p>
               <h3 className="text-base font-semibold">{spot.name}</h3>

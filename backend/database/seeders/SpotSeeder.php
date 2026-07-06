@@ -54,7 +54,7 @@ class SpotSeeder extends Seeder
                 'latitude' => 43.6492000,
                 'longitude' => 144.6131000,
                 'image_url' => '/images/spots/KaminokoPond.png',
-                'images' => ['/images/spots/KaminokoPond.png', '/images/spots/KaminokoPond2.png', '/images/spots/KaminokoPond3.png', '/images/spots/KaminokoPond4.png', '/images/spots/kaminoko.png', '/images/spots/kaminoko2.png', '/images/spots/kaminoko3.png'],
+                'images' => ['/images/spots/KaminokoPond.png', '/images/spots/KaminokoPond2.png', '/images/spots/KaminokoPond3.png', '/images/spots/KaminokoPond4.png'],
                 'music_url' => '/music/kamino.mp3',
                 'video_url' => null,
                 'rarity' => 4,

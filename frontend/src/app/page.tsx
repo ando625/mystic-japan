@@ -7,14 +7,18 @@ import { AnimatedSpotImage } from "@/components/spot/AnimatedSpotImage";
 
 export default function Home() {
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-8 md:px-8 lg:py-10">
+    <main className="relative isolate -mb-24 min-h-screen overflow-hidden px-4 py-8 md:px-8 lg:py-10">
+      <div className="absolute inset-0 -z-10">
+        <AnimatedSpotImage alt="日本神秘紀行の幻想世界" priority src="/images/home/home.png" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,8,22,0.74),rgba(5,8,22,0.36)_46%,rgba(5,8,22,0.72)),linear-gradient(180deg,rgba(5,8,22,0.08),rgba(5,8,22,0.74)_70%,rgba(5,8,22,0.96))]" />
+      </div>
       <motion.section
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7 }}
-        className="grid flex-1 items-center gap-8 lg:grid-cols-[1.04fr_0.96fr]"
+        className="mx-auto grid min-h-[calc(100vh-5rem)] w-full max-w-7xl content-center gap-8 pb-28 pt-10 lg:grid-cols-[1fr_0.58fr]"
       >
-        <div className="pt-8 md:pt-16">
+        <div>
           <p className="mb-4 text-sm uppercase tracking-[0.38em] text-cyan-100/70">Mystic Japan</p>
           <h1 className="max-w-3xl text-5xl font-semibold leading-tight text-white text-glow md:text-7xl">
             日本神秘紀行
@@ -36,20 +40,16 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="relative min-h-[420px] overflow-hidden rounded-[8px] shadow-[0_0_80px_rgba(79,70,229,0.26)]">
-          <AnimatedSpotImage alt="日本神秘紀行の幻想世界" priority src="/images/home/home.png" />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/82 via-slate-950/10 to-transparent" />
-          <div className="absolute inset-x-0 bottom-0 p-5 md:p-7">
-            <p className="text-xs uppercase tracking-[0.36em] text-cyan-100/70">Gate of Memories</p>
-            <h2 className="mt-2 text-3xl font-semibold text-white text-glow md:text-4xl">神域への扉</h2>
-            <p className="mt-3 max-w-xl text-sm leading-7 text-slate-100/78">
-              ここは旅の入口。地図、御朱印、神話クイズを通じて、日本各地に眠る記憶を解放していきます。
-            </p>
-          </div>
+        <div className="self-end rounded-[8px] border border-violet-300/18 bg-slate-950/28 p-5 backdrop-blur-md md:p-6">
+          <p className="text-xs uppercase tracking-[0.36em] text-cyan-100/70">Gate of Memories</p>
+          <h2 className="mt-2 text-3xl font-semibold text-white text-glow md:text-4xl">神域への扉</h2>
+          <p className="mt-3 max-w-xl text-sm leading-7 text-slate-100/78">
+            ここは旅の入口。地図、御朱印、神話クイズを通じて、日本各地に眠る記憶を解放していきます。
+          </p>
         </div>
       </motion.section>
 
-      <section className="mt-10 grid gap-4 md:grid-cols-3">
+      <section className="mx-auto -mt-24 grid w-full max-w-7xl gap-4 pb-32 md:grid-cols-3">
         {[
           { title: "地図から巡る", body: "日本地図上の神域を選び、解放条件や物語を確認します。", icon: Map, href: "/map" },
           { title: "御朱印を集める", body: "訪問やクイズ正解で、幻想御朱印が御朱印帳に刻まれます。", icon: ScrollText, href: "/stamps" },

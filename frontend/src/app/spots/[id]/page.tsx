@@ -14,6 +14,7 @@ import { AnimatedSpotImage } from "@/components/spot/AnimatedSpotImage";
 import { BgmPanel } from "@/components/spot/BgmPanel";
 import { CinematicSpotModal } from "@/components/spot/CinematicSpotModal";
 import { ImageThumbnailList } from "@/components/spot/ImageThumbnailList";
+import { SpotImage } from "@/components/spot/SpotImage";
 import { SpotStoryTabs } from "@/components/spot/SpotStoryTabs";
 import { UnlockModal } from "@/components/spot/UnlockModal";
 import { GlassPanel } from "@/components/ui/GlassPanel";
@@ -89,7 +90,11 @@ export default function SpotDetailPage() {
   const shouldShowUnlockModal = showUnlock && Boolean(unlockResult) && !unlockResult?.already_unlocked;
 
   return (
-    <main className="mx-auto max-w-7xl px-4 py-8 md:px-8">
+    <main className="relative isolate mx-auto max-w-7xl px-4 py-8 md:px-8">
+      <div aria-hidden className="fixed inset-0 z-0">
+        <SpotImage alt={`${spot.name} 背景`} src={mainImage} />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,8,22,0.84),rgba(5,8,22,0.42)_48%,rgba(5,8,22,0.82)),linear-gradient(180deg,rgba(5,8,22,0.08),rgba(5,8,22,0.76)_62%,rgba(5,8,22,0.98))]" />
+      </div>
       <UnlockModal
         achievements={unlock.data?.new_achievements ?? []}
         onClose={() => setShowUnlock(false)}
@@ -98,12 +103,12 @@ export default function SpotDetailPage() {
         spotName={spot.name}
       />
       <CinematicSpotModal imageSrc={mainImage} open={showCinematic} spot={spot} onClose={() => setShowCinematic(false)} />
-      <Link className="mb-5 inline-flex items-center gap-2 text-sm text-cyan-100/80 hover:text-white" href="/spots">
+      <Link className="relative z-10 mb-5 inline-flex items-center gap-2 text-sm text-cyan-100/80 hover:text-white" href="/spots">
         <ArrowLeft className="h-4 w-4" />
         図鑑へ戻る
       </Link>
 
-      <section className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(380px,0.65fr)]">
+      <section className="relative z-10 grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(380px,0.65fr)]">
         <div className="space-y-4">
           <div className="relative -mx-4 overflow-hidden md:-mx-8 xl:mx-0">
             <div className="relative min-h-[520px] overflow-hidden xl:rounded-[8px]">

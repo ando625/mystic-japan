@@ -111,14 +111,25 @@ class ProgressService
             ->first();
 
         if ($existing) {
+            $stampResult = null;
+            $spotUnlock = ['already_unlocked' => true];
+
+            // Older sessions may have a correct answer saved before unlock and
+            // stamp rewards were fully wired. Repair that progression here
+            // without granting duplicate quiz points.
+            if ($existing->is_correct) {
+                $spotUnlock = $this->unlockSpot($user, $quiz->spot);
+                $stampResult = $quiz->spot->stamp ? $this->obtainStamp($user, $quiz->spot->stamp) : null;
+            }
+
             return [
                 'answer' => $existing,
                 'is_correct' => $existing->is_correct,
                 'already_answered' => true,
                 'reward_points' => 0,
-                'stamp' => null,
-                'stamp_obtained' => false,
-                'spot_unlocked' => false,
+                'stamp' => $stampResult['stamp'] ?? null,
+                'stamp_obtained' => $stampResult ? ! $stampResult['already_obtained'] : false,
+                'spot_unlocked' => $existing->is_correct && ! $spotUnlock['already_unlocked'],
             ];
         }
 
