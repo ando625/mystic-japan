@@ -18,7 +18,7 @@ export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed inset-x-3 bottom-3 z-40 mx-auto max-w-3xl rounded-[8px] border border-violet-300/20 bg-slate-950/72 px-2 py-2 shadow-[0_0_38px_rgba(30,41,59,0.8)] backdrop-blur-xl">
+    <nav className="fixed inset-x-3 bottom-3 z-40 mx-auto max-w-2xl rounded-[8px] border border-white/10 bg-black/30 px-1.5 py-1.5 opacity-75 shadow-[0_0_24px_rgba(15,23,42,0.5)] backdrop-blur-md transition hover:opacity-95">
       <div className="grid grid-cols-6 gap-1">
         {items.map((item) => {
           const Icon = item.icon;
@@ -29,11 +29,11 @@ export function BottomNav() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex h-14 flex-col items-center justify-center gap-1 rounded-[6px] text-[11px] text-slate-300 transition hover:bg-violet-500/18 hover:text-white",
-                active && "bg-violet-500/22 text-white shadow-[inset_0_0_18px_rgba(168,85,247,0.22)]",
+                "flex h-11 flex-col items-center justify-center gap-0.5 rounded-[6px] text-[10px] text-slate-300 transition hover:bg-white/10 hover:text-white",
+                active && "bg-white/12 text-white shadow-[inset_0_0_14px_rgba(168,85,247,0.16)]",
               )}
             >
-              <Icon className="h-5 w-5" />
+              <Icon className="h-4 w-4" />
               <span>{item.label}</span>
             </Link>
           );

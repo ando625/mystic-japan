@@ -9,13 +9,27 @@ const homeHeroImage = "/images/home/home.png";
 
 export default function Home() {
   return (
-    <main className="relative isolate -mb-24 min-h-screen w-full overflow-hidden">
-      <div className="absolute inset-0 -z-10">
+    <main className="relative isolate -mb-24 h-screen min-h-screen w-full overflow-hidden bg-[#03030b]">
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_center,#160b2e_0%,#070512_45%,#020208_100%)]" />
+      <div className="absolute inset-0 -z-10 opacity-25 blur-[72px]">
+        <Image
+          alt=""
+          className="object-cover"
+          fill
+          priority
+          sizes="100vw"
+          src={homeHeroImage}
+          unoptimized
+        />
+      </div>
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_center,rgba(34,21,72,0.08),rgba(3,3,11,0.84)_64%,rgba(2,2,8,0.98)_100%)]" />
+
+      <div className="absolute inset-y-0 left-1/2 z-0 w-full max-w-[min(76vw,760px)] -translate-x-1/2 sm:max-w-[min(64vw,760px)]">
         <motion.div
-          animate={{ scale: [1.05, 1.12] }}
+          animate={{ scale: [1, 1.025], y: [0, -8, 0] }}
           className="absolute inset-0"
           transition={{
-            duration: 22,
+            duration: 26,
             ease: "easeInOut",
             repeat: Infinity,
             repeatType: "reverse",
@@ -23,7 +37,7 @@ export default function Home() {
         >
           <Image
             alt="日本神秘紀行の幻想的な絶景"
-            className="object-cover"
+            className="object-contain"
             fill
             priority
             sizes="100vw"
@@ -31,39 +45,38 @@ export default function Home() {
             unoptimized
           />
         </motion.div>
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(3,7,18,0.76),rgba(30,16,64,0.38)_42%,rgba(3,7,18,0.28)_70%),linear-gradient(180deg,rgba(3,7,18,0.18),rgba(3,7,18,0.22)_46%,rgba(3,7,18,0.9))]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_22%_30%,rgba(168,85,247,0.18),transparent_34%),radial-gradient(circle_at_76%_16%,rgba(56,189,248,0.12),transparent_32%)]" />
       </div>
+      <div className="pointer-events-none absolute inset-0 z-0 bg-[linear-gradient(90deg,rgba(2,2,8,0.86),rgba(2,2,8,0.18)_24%,transparent_40%,transparent_60%,rgba(2,2,8,0.2)_76%,rgba(2,2,8,0.88))]" />
 
       <motion.section
-        animate={{ opacity: 1, y: 0 }}
-        className="relative z-10 flex min-h-screen w-full items-center px-5 pb-36 pt-20 md:px-10 lg:px-16"
-        initial={{ opacity: 0, y: 18 }}
-        transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+        animate={{ opacity: 0.84, x: 0 }}
+        className="relative z-10 flex h-screen w-full items-start px-5 pb-28 pt-16 md:items-center md:px-8 lg:px-10"
+        initial={{ opacity: 0, x: -15 }}
+        transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
       >
-        <div className="max-w-3xl">
-          <p className="mb-4 text-xs uppercase tracking-[0.42em] text-cyan-100/72 drop-shadow-[0_0_12px_rgba(103,232,249,0.45)] md:text-sm">
+        <div className="max-w-[18rem] md:max-w-[22rem]">
+          <p className="mb-3 text-[10px] uppercase tracking-[0.4em] text-cyan-100/65 md:text-xs">
             Mystic Japan
           </p>
-          <h1 className="text-5xl font-semibold leading-tight text-white drop-shadow-[0_0_28px_rgba(216,180,254,0.52)] md:text-7xl lg:text-8xl">
+          <h1 className="text-3xl font-semibold leading-tight text-white/88 drop-shadow-[0_0_12px_rgba(255,255,255,0.22)] md:text-4xl lg:text-5xl">
             日本神秘紀行
           </h1>
-          <p className="mt-5 text-xl text-violet-50/90 drop-shadow-[0_0_18px_rgba(255,255,255,0.28)] md:text-3xl">
+          <p className="mt-3 text-sm text-violet-50/76 md:text-base">
             神々の記憶を巡る旅
           </p>
-          <div className="mt-9 flex flex-wrap gap-3">
+          <div className="mt-6 flex flex-wrap gap-2">
             <Link
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[8px] border border-white/20 bg-white/10 px-5 text-sm font-medium text-white shadow-[0_0_24px_rgba(15,23,42,0.28)] backdrop-blur-md transition hover:border-white/35 hover:bg-white/18"
+              className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-[8px] border border-white/10 bg-black/20 px-3 text-sm font-medium text-white/75 opacity-80 backdrop-blur-sm transition hover:border-white/25 hover:bg-white/12 hover:text-white hover:opacity-100"
               href="/map"
             >
-              <Map className="h-4 w-4" />
+              <Map className="h-3.5 w-3.5" />
               旅を始める
             </Link>
             <Link
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[8px] border border-white/20 bg-white/10 px-5 text-sm font-medium text-white shadow-[0_0_24px_rgba(15,23,42,0.28)] backdrop-blur-md transition hover:border-white/35 hover:bg-white/18"
+              className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-[8px] border border-white/10 bg-black/20 px-3 text-sm font-medium text-white/75 opacity-80 backdrop-blur-sm transition hover:border-white/25 hover:bg-white/12 hover:text-white hover:opacity-100"
               href="/spots"
             >
-              <BookOpen className="h-4 w-4" />
+              <BookOpen className="h-3.5 w-3.5" />
               図鑑を見る
             </Link>
           </div>
