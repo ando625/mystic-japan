@@ -34,6 +34,7 @@ class Spot extends Model
         'latitude',
         'longitude',
         'image_url',
+        'images',
         'music_url',
         'video_url',
         'rarity',
@@ -45,6 +46,7 @@ class Spot extends Model
         return [
             'latitude' => 'decimal:7',
             'longitude' => 'decimal:7',
+            'images' => 'array',
             'rarity' => 'integer',
             'mystic_points' => 'integer',
         ];

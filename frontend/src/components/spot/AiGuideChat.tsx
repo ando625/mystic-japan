@@ -26,7 +26,7 @@ export function AiGuideChat({ spot, compact = false }: { spot: Spot; compact?: b
   ]);
 
   const suggestions = useMemo(
-    () => [`${spot.name}の神話を教えて`, "おすすめの季節は？", "初めて行くなら何を見る？"],
+    () => [`${spot.name}の神話を教えて`, "おすすめの季節は？", "初めて行くなら何を見る？", "写真映えする時間帯は？"],
     [spot.name],
   );
 
@@ -76,12 +76,13 @@ export function AiGuideChat({ spot, compact = false }: { spot: Spot; compact?: b
   return (
     <GlassPanel glow className={compact ? "p-5" : "p-6"}>
       <div className="mb-5 flex items-center gap-3">
-        <div className="grid h-11 w-11 place-items-center rounded-full border border-cyan-200/25 bg-cyan-500/10 text-cyan-100">
-          <Bot className="h-5 w-5" />
+        <div className="grid h-12 w-12 place-items-center rounded-full border border-cyan-200/35 bg-cyan-500/14 text-cyan-100 shadow-[0_0_26px_rgba(34,211,238,0.22)]">
+          <Bot className="h-6 w-6" />
         </div>
         <div>
           <p className="text-xs uppercase tracking-[0.26em] text-cyan-100/65">AI Guide</p>
-          <h2 className="text-xl font-semibold text-white">AI旅ガイド</h2>
+          <h2 className="text-2xl font-semibold text-white text-glow">AI旅ガイド</h2>
+          <p className="mt-1 text-xs text-slate-300">神話・季節・撮影・巡り方をその場で相談</p>
         </div>
       </div>
 
@@ -98,7 +99,7 @@ export function AiGuideChat({ spot, compact = false }: { spot: Spot; compact?: b
         </div>
       ) : (
         <>
-          <div className={compact ? "max-h-72 space-y-3 overflow-y-auto pr-1" : "max-h-[520px] space-y-3 overflow-y-auto pr-1"}>
+          <div className={compact ? "max-h-[420px] min-h-[240px] space-y-3 overflow-y-auto pr-1" : "max-h-[520px] space-y-3 overflow-y-auto pr-1"}>
             {messages.map((item, index) => (
               <div key={`${item.role}-${index}`} className={item.role === "user" ? "flex justify-end" : "flex justify-start"}>
                 <div
@@ -123,11 +124,11 @@ export function AiGuideChat({ spot, compact = false }: { spot: Spot; compact?: b
             ) : null}
           </div>
 
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
             {suggestions.map((item) => (
               <button
                 key={item}
-                className="min-h-9 rounded-[8px] border border-violet-300/20 bg-slate-950/38 px-3 text-xs text-slate-200 transition hover:bg-violet-500/20"
+                className="min-h-10 rounded-[8px] border border-violet-300/20 bg-slate-950/42 px-3 text-left text-xs text-slate-200 transition hover:border-cyan-100/40 hover:bg-violet-500/20"
                 onClick={() => submit(item)}
                 type="button"
               >
@@ -136,9 +137,9 @@ export function AiGuideChat({ spot, compact = false }: { spot: Spot; compact?: b
             ))}
           </div>
 
-          <form className="mt-4 flex gap-2" onSubmit={handleSubmit}>
+          <form className="mt-4 flex gap-2 rounded-[8px] border border-violet-300/20 bg-slate-950/44 p-2" onSubmit={handleSubmit}>
             <input
-              className="min-h-12 min-w-0 flex-1 rounded-[8px] border border-violet-300/20 bg-slate-950/55 px-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-violet-200/70"
+              className="min-h-12 min-w-0 flex-1 rounded-[8px] border border-transparent bg-slate-950/45 px-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-violet-200/60"
               maxLength={1000}
               onChange={(event) => setMessage(event.target.value)}
               placeholder={`${spot.name}について質問...`}

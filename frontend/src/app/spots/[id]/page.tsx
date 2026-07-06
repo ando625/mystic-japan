@@ -2,36 +2,31 @@
 
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Bot, Gem, Heart, ImageIcon, Play, ScrollText } from "lucide-react";
+import { ArrowLeft, Bot, Gem, Heart, ImageIcon, Play, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { getSpot, unlockSpot } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth-store";
 import { categoryLabel } from "@/data/categories";
-import { cn } from "@/lib/utils";
 import { AiGuideChat } from "@/components/spot/AiGuideChat";
+import { AnimatedSpotImage } from "@/components/spot/AnimatedSpotImage";
 import { BgmPanel } from "@/components/spot/BgmPanel";
 import { CinematicSpotModal } from "@/components/spot/CinematicSpotModal";
-import { SpotImage } from "@/components/spot/SpotImage";
+import { ImageThumbnailList } from "@/components/spot/ImageThumbnailList";
+import { SpotStoryTabs } from "@/components/spot/SpotStoryTabs";
 import { UnlockModal } from "@/components/spot/UnlockModal";
 import { GlassPanel } from "@/components/ui/GlassPanel";
 import { GlowButton, GlowLink } from "@/components/ui/GlowButton";
 import { RarityStars } from "@/components/ui/RarityStars";
-
-const tabs = [
-  { key: "mythology", label: "神話・伝説" },
-  { key: "history", label: "歴史" },
-  { key: "trivia", label: "豆知識" },
-] as const;
 
 export default function SpotDetailPage() {
   const params = useParams<{ id: string }>();
   const spotId = Number(params.id);
   const { token } = useAuthStore();
   const queryClient = useQueryClient();
-  const [tab, setTab] = useState<(typeof tabs)[number]["key"]>("mythology");
   const [showUnlock, setShowUnlock] = useState(false);
   const [showCinematic, setShowCinematic] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const { data: spot, isLoading } = useQuery({
     queryKey: ["spot", spotId, token],
@@ -56,13 +51,15 @@ export default function SpotDetailPage() {
     },
   });
 
-  const lore = useMemo(() => {
+  const images = useMemo(() => {
     if (!spot) {
-      return "";
+      return [];
     }
 
-    return spot[tab] || "この記憶はまだ霧の向こうにあります。";
-  }, [spot, tab]);
+    return Array.from(new Set([...(spot.images ?? []), spot.image_url].filter(Boolean) as string[]));
+  }, [spot]);
+
+  const mainImage = selectedImage ?? images[0] ?? spot?.image_url ?? null;
 
   if (isLoading || !spot) {
     return <main className="grid min-h-screen place-items-center text-slate-300">神域を読み込み中...</main>;
@@ -86,28 +83,30 @@ export default function SpotDetailPage() {
         図鑑へ戻る
       </Link>
 
-      <section className="grid gap-6 lg:grid-cols-[0.58fr_0.42fr]">
-        <GlassPanel glow className="overflow-hidden">
-          <div className="relative aspect-[16/11] min-h-[360px]">
-            <SpotImage alt={spot.name} src={spot.image_url} />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/10 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-6">
-              <p className="text-sm text-cyan-100/75">{categoryLabel[spot.category]} / {spot.prefecture}</p>
-              <h1 className="mt-2 text-4xl font-semibold text-white text-glow md:text-6xl">{spot.name}</h1>
-              <div className="mt-4 flex flex-wrap items-center gap-4">
-                <RarityStars value={spot.rarity} />
-                <span className="rounded-full border border-violet-300/30 bg-violet-500/18 px-3 py-1 text-sm text-violet-100">
-                  {spot.mystic_points} pt
-                </span>
+      <section className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(380px,0.65fr)]">
+        <div className="space-y-4">
+          <GlassPanel glow className="overflow-hidden">
+            <div className="relative aspect-[16/10] min-h-[420px]">
+              <AnimatedSpotImage alt={spot.name} priority src={mainImage} />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/8 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 p-5 md:p-7">
+                <p className="text-sm text-cyan-100/75">{categoryLabel[spot.category]} / {spot.prefecture}</p>
+                <h1 className="mt-2 text-5xl font-semibold text-white text-glow md:text-7xl">{spot.name}</h1>
+                <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-100/82">{spot.description}</p>
+                <div className="mt-4 flex flex-wrap items-center gap-4">
+                  <RarityStars value={spot.rarity} />
+                  <span className="rounded-full border border-violet-300/30 bg-violet-500/18 px-3 py-1 text-sm text-violet-100">
+                    {spot.mystic_points} pt
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-        </GlassPanel>
+          </GlassPanel>
 
-        <div className="space-y-5">
-          <GlassPanel className="p-5">
-            <p className="text-sm leading-7 text-slate-200/82">{spot.description}</p>
-            <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <ImageThumbnailList images={images} selected={mainImage ?? ""} onSelect={setSelectedImage} />
+
+          <GlassPanel className="p-4">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               <button
                 className="grid min-h-16 place-items-center rounded-[8px] border border-violet-300/20 bg-slate-950/42 text-xs text-slate-200 transition hover:border-cyan-100/45 hover:bg-cyan-500/12"
                 onClick={() => setShowCinematic(true)}
@@ -116,15 +115,15 @@ export default function SpotDetailPage() {
                 <ImageIcon className="mb-1 h-5 w-5 text-cyan-100" />
                 幻想鑑賞
               </button>
-              <button className="grid min-h-16 place-items-center rounded-[8px] border border-violet-300/20 bg-slate-950/42 text-xs text-slate-200">
+              <button className="grid min-h-16 place-items-center rounded-[8px] border border-violet-300/20 bg-slate-950/42 text-xs text-slate-200" type="button">
                 <Play className="mb-1 h-5 w-5 text-cyan-100" />
                 BGM
               </button>
-              <button className="grid min-h-16 place-items-center rounded-[8px] border border-violet-300/20 bg-slate-950/42 text-xs text-slate-200">
-                <ScrollText className="mb-1 h-5 w-5 text-cyan-100" />
-                物語
+              <button className="grid min-h-16 place-items-center rounded-[8px] border border-violet-300/20 bg-slate-950/42 text-xs text-slate-200" type="button">
+                <Sparkles className="mb-1 h-5 w-5 text-cyan-100" />
+                記憶
               </button>
-              <button className="grid min-h-16 place-items-center rounded-[8px] border border-violet-300/20 bg-slate-950/42 text-xs text-slate-200">
+              <button className="grid min-h-16 place-items-center rounded-[8px] border border-violet-300/20 bg-slate-950/42 text-xs text-slate-200" type="button">
                 <Heart className="mb-1 h-5 w-5 text-cyan-100" />
                 保存
               </button>
@@ -146,32 +145,12 @@ export default function SpotDetailPage() {
               ) : null}
             </div>
           </GlassPanel>
-
-          <BgmPanel spot={spot} />
         </div>
-      </section>
 
-      <section className="mt-6 grid gap-5 lg:grid-cols-[1fr_360px]">
-        <GlassPanel className="p-5">
-          <div className="mb-5 grid grid-cols-3 gap-2">
-            {tabs.map((item) => (
-              <button
-                key={item.key}
-                onClick={() => setTab(item.key)}
-                className={cn(
-                  "min-h-11 rounded-[8px] border border-violet-300/20 bg-slate-950/42 text-sm text-slate-300 transition",
-                  tab === item.key && "border-violet-200/60 bg-violet-500/30 text-white shadow-[0_0_22px_rgba(168,85,247,0.24)]",
-                )}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
-          <p className="text-sm leading-8 text-slate-200/86">{lore}</p>
-        </GlassPanel>
-
-        <div className="space-y-3">
+        <div className="space-y-4">
           <AiGuideChat compact spot={spot} />
+          <SpotStoryTabs spot={spot} />
+          <BgmPanel spot={spot} />
           <Link
             className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-[8px] border border-cyan-200/25 bg-cyan-500/10 text-sm text-cyan-50 transition hover:bg-cyan-500/18"
             href={`/spots/${spot.id}/guide`}

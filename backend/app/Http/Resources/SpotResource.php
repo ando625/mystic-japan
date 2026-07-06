@@ -27,6 +27,7 @@ class SpotResource extends JsonResource
             'latitude' => (float) $this->latitude,
             'longitude' => (float) $this->longitude,
             'image_url' => $this->image_url,
+            'images' => $this->images ?: array_values(array_filter([$this->image_url])),
             'music_url' => $this->when($request->routeIs('spots.show'), $this->music_url),
             'video_url' => $this->when($request->routeIs('spots.show'), $this->video_url),
             'rarity' => $this->rarity,

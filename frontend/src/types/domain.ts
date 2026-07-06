@@ -19,6 +19,7 @@ export type Spot = {
   latitude: number;
   longitude: number;
   image_url?: string | null;
+  images?: string[] | null;
   music_url?: string | null;
   video_url?: string | null;
   rarity: number;
