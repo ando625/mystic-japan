@@ -153,7 +153,7 @@ export default function SpotDetailPage() {
   const shouldShowUnlockModal = showUnlock && Boolean(unlockResult) && !unlockResult?.already_unlocked;
 
   return (
-    <main className="min-h-screen bg-[#02030a] px-4 py-8 md:px-8">
+    <main className="min-h-screen bg-[#02030a] px-4 pb-40 pt-8 md:px-8">
       <UnlockModal
         achievements={unlock.data?.new_achievements ?? []}
         onClose={() => setShowUnlock(false)}
@@ -166,50 +166,56 @@ export default function SpotDetailPage() {
         図鑑へ戻る
       </Link>
 
-      <section className="mx-auto max-w-7xl space-y-5">
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
-          <div>
-            <div className="relative grid min-h-[52vh] place-items-center overflow-hidden bg-black md:min-h-[68vh]">
-              {selectedMedia?.type === "video" ? (
-                <video
-                  autoPlay
-                  className="h-full max-h-[70vh] w-full object-contain"
-                  controls={false}
-                  loop
-                  muted
-                  playsInline
-                  src={selectedMedia.url}
-                />
-              ) : (
-                <Image
-                  alt={selectedMedia?.alt ?? spot.name}
-                  className="object-contain"
-                  fill
-                  priority
-                  sizes="(min-width: 1280px) 960px, 100vw"
-                  src={selectedMedia?.url || defaultImage}
-                  unoptimized
-                />
-              )}
+      <section className="mx-auto max-w-none space-y-6">
+        <div className="space-y-4">
+          <div className="mx-auto flex w-full max-w-7xl flex-col gap-3">
+            <p className="text-xs text-cyan-100/70 md:text-sm">
+              {categoryLabel[spot.category]} / {spot.prefecture}
+            </p>
+            <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+              <h1 className="text-2xl font-semibold text-white drop-shadow-[0_0_18px_rgba(221,214,254,0.45)] md:text-3xl">
+                {spot.name}
+              </h1>
+              <div className="flex flex-wrap items-center gap-3">
+                <RarityStars value={spot.rarity} />
+                <span className="rounded-full border border-violet-300/20 bg-white/5 px-3 py-1 text-xs text-violet-100">
+                  {spot.mystic_points} pt
+                </span>
+              </div>
             </div>
-            <MediaThumbnailList media={media} selectedId={selectedMedia?.id} onSelect={setSelectedMediaId} />
           </div>
 
-          <aside className="space-y-3 xl:pt-1">
-            <p className="text-xs text-cyan-100/70">{categoryLabel[spot.category]} / {spot.prefecture}</p>
-            <h1 className="text-3xl font-semibold text-white md:text-4xl">{spot.name}</h1>
-            <p className="text-sm leading-6 text-slate-300">{spot.description}</p>
-            <div className="flex flex-wrap items-center gap-3">
-              <RarityStars value={spot.rarity} />
-              <span className="rounded-full border border-violet-300/20 bg-white/5 px-3 py-1 text-xs text-violet-100">
-                {spot.mystic_points} pt
-              </span>
-            </div>
-          </aside>
+          <div className="relative aspect-video min-h-[520px] max-h-[72vh] w-full overflow-hidden bg-black">
+            {selectedMedia?.type === "video" ? (
+              <video
+                autoPlay
+                className="h-full w-full object-contain"
+                controls
+                loop
+                muted
+                playsInline
+                src={selectedMedia.url}
+              />
+            ) : (
+              <Image
+                alt={selectedMedia?.alt ?? spot.name}
+                className="object-contain"
+                fill
+                priority
+                sizes="100vw"
+                src={selectedMedia?.url || defaultImage}
+                unoptimized
+              />
+            )}
+          </div>
+
+          <div className="mx-auto w-full max-w-7xl">
+            <MediaThumbnailList media={media} selectedId={selectedMedia?.id} onSelect={setSelectedMediaId} />
+          </div>
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-3">
-          <FeaturePanel className="lg:col-span-2">
+        <div className="mx-auto grid w-full max-w-7xl gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <FeaturePanel>
             <AiGuideChat compact spot={spot} />
           </FeaturePanel>
           <FeaturePanel>
@@ -234,7 +240,7 @@ export default function SpotDetailPage() {
             {!spot.is_unlocked ? <p className="mt-3 text-xs leading-5 text-violet-100/80">{spot.unlock_condition}</p> : null}
             {unlock.isSuccess ? <p className="mt-3 text-center text-sm text-violet-100">解放状態を更新しました。</p> : null}
           </FeaturePanel>
-          <FeaturePanel className="lg:col-span-2">
+          <FeaturePanel>
             <div className="grid gap-4 sm:grid-cols-[108px_1fr]">
               {spot.stamp ? <StampSeal stamp={spot.stamp} locked={!spot.stamp.is_obtained} /> : null}
               <div className="min-w-0">
@@ -270,10 +276,14 @@ export default function SpotDetailPage() {
               </div>
             </div>
           </FeaturePanel>
-          <FeaturePanel>
+          <FeaturePanel className="xl:col-span-2">
+            <div className="mb-5 border-b border-white/10 pb-4">
+              <p className="text-xs font-semibold tracking-[0.28em] text-cyan-100/60">INTRODUCTION</p>
+              <p className="mt-2 text-sm leading-6 text-slate-300">{spot.description}</p>
+            </div>
             <SpotStoryTabs spot={spot} />
           </FeaturePanel>
-          <FeaturePanel className="lg:col-span-3">
+          <FeaturePanel className="md:col-span-2 xl:col-span-3">
             <Link
               className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-[8px] border border-cyan-200/20 bg-cyan-500/10 text-sm text-cyan-50 transition hover:bg-cyan-500/18"
               href={`/spots/${spot.id}/guide`}
