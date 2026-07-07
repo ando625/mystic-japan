@@ -40,8 +40,8 @@ export default function Home() {
 
       <motion.section
         animate={{ opacity: 0.84, x: 0 }}
-        className="relative z-10 flex h-screen w-full items-start justify-end px-5 pb-28 pt-12 text-right md:px-8 md:pt-16 lg:px-10"
-        initial={{ opacity: 0, x: 15 }}
+        className="relative z-10 flex h-screen w-full items-start justify-start px-5 pb-28 pt-12 text-left md:px-8 md:pt-16 lg:px-10"
+        initial={{ opacity: 0, x: -15 }}
         transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
       >
         <div className="max-w-[18rem] md:max-w-[22rem]">
@@ -54,7 +54,7 @@ export default function Home() {
           <p className="mt-3 text-sm text-violet-50/76 md:text-base">
             神々の記憶を巡る旅
           </p>
-          <div className="mt-6 flex flex-wrap justify-end gap-2">
+          <div className="mt-6 flex flex-wrap justify-start gap-2">
             <Link
               className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-[8px] border border-white/10 bg-black/20 px-3 text-sm font-medium text-white/75 opacity-80 backdrop-blur-sm transition hover:border-white/25 hover:bg-white/12 hover:text-white hover:opacity-100"
               href="/map"

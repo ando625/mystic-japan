@@ -220,9 +220,18 @@ export default function SpotDetailPage() {
         </div>
 
         <div className="mx-auto grid w-full max-w-7xl items-start gap-4 lg:grid-cols-[minmax(0,1fr)_380px]">
-          <FeaturePanel className="h-fit self-start lg:row-span-3">
-            <AiGuideChat compact spot={spot} />
-          </FeaturePanel>
+          <div className="grid h-fit gap-4 self-start">
+            <FeaturePanel>
+              <AiGuideChat compact spot={spot} />
+            </FeaturePanel>
+            <FeaturePanel>
+              <div className="mb-5 border-b border-white/10 pb-4">
+                <p className="text-xs font-semibold tracking-[0.28em] text-cyan-100/60">INTRODUCTION</p>
+                <p className="mt-2 text-sm leading-6 text-slate-300">{spot.description}</p>
+              </div>
+              <SpotStoryTabs spot={spot} />
+            </FeaturePanel>
+          </div>
           <div className="grid h-fit gap-4 self-start">
             <FeaturePanel>
               <BgmPanel embedded spot={spot} />
@@ -283,13 +292,6 @@ export default function SpotDetailPage() {
               </div>
             </FeaturePanel>
           </div>
-          <FeaturePanel className="h-fit lg:col-span-2">
-            <div className="mb-5 border-b border-white/10 pb-4">
-              <p className="text-xs font-semibold tracking-[0.28em] text-cyan-100/60">INTRODUCTION</p>
-              <p className="mt-2 text-sm leading-6 text-slate-300">{spot.description}</p>
-            </div>
-            <SpotStoryTabs spot={spot} />
-          </FeaturePanel>
           <FeaturePanel className="h-fit lg:col-span-2">
             <Link
               className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-[8px] border border-cyan-200/20 bg-cyan-500/10 text-sm text-cyan-50 transition hover:bg-cyan-500/18"
