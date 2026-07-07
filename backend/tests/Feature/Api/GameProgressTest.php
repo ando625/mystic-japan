@@ -83,4 +83,23 @@ class GameProgressTest extends TestCase
         $response->assertOk()
             ->assertJsonPath('data.0.is_obtained', true);
     }
+
+    public function test_my_stamps_reflects_stamp_obtained_from_visit(): void
+    {
+        $this->seed();
+
+        $user = User::factory()->create();
+        $spot = Spot::query()->with('stamp')->firstOrFail();
+        Sanctum::actingAs($user);
+
+        $this->postJson("/api/spots/{$spot->id}/visit")
+            ->assertOk()
+            ->assertJsonPath('stamp.id', $spot->stamp->id);
+
+        $this->getJson('/api/me/stamps')
+            ->assertOk()
+            ->assertJsonPath('data.0.id', $spot->stamp->id)
+            ->assertJsonPath('data.0.is_obtained', true)
+            ->assertJsonPath('data.0.obtained_at', fn ($value) => is_string($value));
+    }
 }

@@ -111,7 +111,7 @@ export async function visitSpot(id: number, token: string) {
 
 export async function getStamps(token?: string | null): Promise<Stamp[]> {
   try {
-    const response = await request<JsonApiResponse<Stamp[]>>("/stamps", token);
+    const response = await request<JsonApiResponse<Stamp[]>>(token ? "/me/stamps" : "/stamps", token);
     return response.data;
   } catch {
     return [];

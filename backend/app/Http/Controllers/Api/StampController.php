@@ -9,12 +9,14 @@ use App\Services\ProgressService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class StampController extends Controller
 {
     public function index(Request $request, ProgressService $progress): AnonymousResourceCollection
     {
-        $user = $request->user();
+        $user = $request->user() ?? Auth::guard('sanctum')->user();
 
         if ($user) {
             $progress->ensureInitialSpots($user);
@@ -47,6 +49,11 @@ class StampController extends Controller
     public function obtain(Request $request, Stamp $stamp, ProgressService $progress): JsonResponse
     {
         $result = $progress->obtainStamp($request->user(), $stamp);
+        $obtainedAt = $request->user()->stamps()
+            ->whereKey($stamp->id)
+            ->value('user_stamps.obtained_at');
+        $result['stamp']->setAttribute('is_obtained', true);
+        $result['stamp']->setAttribute('obtained_at', $obtainedAt ? Carbon::parse($obtainedAt) : null);
 
         return response()->json([
             'stamp' => new StampResource($result['stamp']->load('spot')),
