@@ -1,35 +1,25 @@
 "use client";
 
 import { BookOpen, Map } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 
 const homeHeroImage = "/images/home/home.png";
 
 export default function Home() {
+  const reduceMotion = useReducedMotion();
+
   return (
     <main className="relative isolate -mb-24 h-screen min-h-screen w-full overflow-hidden bg-[#03030b]">
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_center,#160b2e_0%,#070512_45%,#020208_100%)]" />
-      <div className="absolute inset-0 -z-10 opacity-25 blur-[72px]">
-        <Image
-          alt=""
-          className="object-cover"
-          fill
-          priority
-          sizes="100vw"
-          src={homeHeroImage}
-          unoptimized
-        />
-      </div>
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_center,rgba(34,21,72,0.08),rgba(3,3,11,0.84)_64%,rgba(2,2,8,0.98)_100%)]" />
 
-      <div className="absolute inset-y-0 left-1/2 z-0 w-full max-w-[min(76vw,760px)] -translate-x-1/2 sm:max-w-[min(64vw,760px)]">
+      <div className="absolute inset-y-0 left-[10px] right-[10px] z-0 overflow-hidden">
         <motion.div
-          animate={{ scale: [1, 1.025], y: [0, -8, 0] }}
+          animate={reduceMotion ? {} : { scale: [1.02, 1.075], x: [0, -8, 6, 0], y: [0, -6, 4, 0] }}
           className="absolute inset-0"
           transition={{
-            duration: 26,
+            duration: 24,
             ease: "easeInOut",
             repeat: Infinity,
             repeatType: "reverse",
@@ -37,7 +27,7 @@ export default function Home() {
         >
           <Image
             alt="日本神秘紀行の幻想的な絶景"
-            className="object-contain"
+            className="object-cover"
             fill
             priority
             sizes="100vw"
@@ -46,7 +36,7 @@ export default function Home() {
           />
         </motion.div>
       </div>
-      <div className="pointer-events-none absolute inset-0 z-0 bg-[linear-gradient(90deg,rgba(2,2,8,0.86),rgba(2,2,8,0.18)_24%,transparent_40%,transparent_60%,rgba(2,2,8,0.2)_76%,rgba(2,2,8,0.88))]" />
+      <div className="pointer-events-none absolute inset-0 z-0 bg-[linear-gradient(90deg,rgba(2,2,8,0.62),rgba(2,2,8,0.16)_32%,rgba(2,2,8,0.08)_68%,rgba(2,2,8,0.74)),linear-gradient(180deg,rgba(2,2,8,0.16),transparent_48%,rgba(2,2,8,0.64))]" />
 
       <motion.section
         animate={{ opacity: 0.84, x: 0 }}

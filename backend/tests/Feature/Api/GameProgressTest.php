@@ -30,7 +30,8 @@ class GameProgressTest extends TestCase
             ->assertJsonPath('stamp.id', $spot->stamp->id);
 
         $second->assertOk()
-            ->assertJsonPath('stamp_obtained', false);
+            ->assertJsonPath('stamp_obtained', true)
+            ->assertJsonPath('user_progress.stamp_obtained', true);
 
         $this->assertDatabaseCount('user_stamps', 1);
     }
@@ -58,7 +59,8 @@ class GameProgressTest extends TestCase
         $second->assertOk()
             ->assertJsonPath('already_answered', true)
             ->assertJsonPath('reward_points', 0)
-            ->assertJsonPath('stamp_obtained', false);
+            ->assertJsonPath('stamp_obtained', true)
+            ->assertJsonPath('user_progress.stamp_obtained', true);
 
         $this->assertDatabaseCount('quiz_answers', 1);
         $this->assertDatabaseHas('user_stamps', [

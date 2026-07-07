@@ -12,6 +12,7 @@ import { useProgressStore } from "@/stores/progress-store";
 import { categoryLabel } from "@/data/categories";
 import { defaultImage } from "@/data/fallback-spots";
 import { AiGuideChat } from "@/components/spot/AiGuideChat";
+import { AnimatedSpotImage } from "@/components/spot/AnimatedSpotImage";
 import { BgmPanel } from "@/components/spot/BgmPanel";
 import { SpotStoryTabs } from "@/components/spot/SpotStoryTabs";
 import { UnlockModal } from "@/components/spot/UnlockModal";
@@ -55,6 +56,7 @@ export default function SpotDetailPage() {
         return {
           ...current,
           is_unlocked: true,
+          unlocked_at: result.user_progress?.unlocked_at ?? result.collection.unlocked_at ?? current.unlocked_at,
           user_progress: {
             ...current.user_progress,
             ...result.user_progress,
@@ -86,21 +88,25 @@ export default function SpotDetailPage() {
         return {
           ...current,
           is_unlocked: true,
+          unlocked_at: result.user_progress?.unlocked_at ?? current.unlocked_at,
           visited_at: result.visited_at,
           user_progress: {
             ...current.user_progress,
             ...result.user_progress,
             is_unlocked: true,
             visited_at: result.visited_at,
+            stamp_obtained: result.stamp_obtained,
           },
           stamp: current.stamp
             ? {
                 ...current.stamp,
+                ...result.stamp,
                 is_obtained: result.stamp_obtained || current.stamp.is_obtained,
-                obtained_at: result.stamp_obtained ? new Date().toISOString() : current.stamp.obtained_at,
+                obtained_at: result.stamp?.obtained_at ?? current.stamp.obtained_at,
               }
-            : current.stamp,
+            : result.stamp ?? current.stamp,
           stamp_obtained: result.stamp_obtained || current.stamp_obtained,
+          obtained_at: result.stamp?.obtained_at ?? current.obtained_at,
         };
       });
       queryClient.invalidateQueries({ queryKey: ["spot", spotId] });
@@ -185,26 +191,25 @@ export default function SpotDetailPage() {
             </div>
           </div>
 
-          <div className="relative aspect-video min-h-[520px] max-h-[72vh] w-full overflow-hidden bg-black">
+          <div className="relative aspect-video min-h-[320px] max-h-[72vh] w-full overflow-hidden bg-black md:min-h-[520px]">
             {selectedMedia?.type === "video" ? (
               <video
                 autoPlay
-                className="h-full w-full object-contain"
-                controls
+                className="h-full w-full object-cover"
                 loop
                 muted
                 playsInline
                 src={selectedMedia.url}
               />
             ) : (
-              <Image
+              <AnimatedSpotImage
                 alt={selectedMedia?.alt ?? spot.name}
-                className="object-contain"
-                fill
+                className="h-full w-full"
+                key={selectedMedia?.url || defaultImage}
+                objectPosition={selectedMedia?.objectPosition ?? "center center"}
                 priority
                 sizes="100vw"
                 src={selectedMedia?.url || defaultImage}
-                unoptimized
               />
             )}
           </div>
@@ -214,76 +219,78 @@ export default function SpotDetailPage() {
           </div>
         </div>
 
-        <div className="mx-auto grid w-full max-w-7xl gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <FeaturePanel>
+        <div className="mx-auto grid w-full max-w-7xl items-start gap-4 lg:grid-cols-[minmax(0,1fr)_380px]">
+          <FeaturePanel className="h-fit self-start lg:row-span-3">
             <AiGuideChat compact spot={spot} />
           </FeaturePanel>
-          <FeaturePanel>
-            <BgmPanel embedded spot={spot} />
-          </FeaturePanel>
-          <FeaturePanel>
-            <div className="mb-3 flex items-center gap-2 text-cyan-100">
-              <Gem className="h-4 w-4" />
-              <h2 className="text-sm font-semibold">解放状態</h2>
-            </div>
-            {token ? (
-              <GlowButton className="w-full" onClick={() => unlock.mutate()} disabled={unlock.isPending || spot.is_unlocked}>
+          <div className="grid h-fit gap-4 self-start">
+            <FeaturePanel>
+              <BgmPanel embedded spot={spot} />
+            </FeaturePanel>
+            <FeaturePanel>
+              <div className="mb-3 flex items-center gap-2 text-cyan-100">
                 <Gem className="h-4 w-4" />
-                {unlock.isPending ? "解放中..." : spot.is_unlocked ? "解放済み" : "この絶景を解放する"}
-              </GlowButton>
-            ) : (
-              <GlowLink className="w-full" href="/login">
-                <Gem className="h-4 w-4" />
-                ログインして解放する
-              </GlowLink>
-            )}
-            {!spot.is_unlocked ? <p className="mt-3 text-xs leading-5 text-violet-100/80">{spot.unlock_condition}</p> : null}
-            {unlock.isSuccess ? <p className="mt-3 text-center text-sm text-violet-100">解放状態を更新しました。</p> : null}
-          </FeaturePanel>
-          <FeaturePanel>
-            <div className="grid gap-4 sm:grid-cols-[108px_1fr]">
-              {spot.stamp ? <StampSeal stamp={spot.stamp} locked={!spot.stamp.is_obtained} /> : null}
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 text-cyan-100">
-                  <ScrollText className="h-4 w-4" />
-                  <h2 className="text-sm font-semibold">御朱印</h2>
-                </div>
-                <p className="mt-2 text-sm leading-6 text-slate-300">
-                  {spot.stamp?.is_obtained
-                    ? `${spot.stamp.name}を獲得済みです。${spot.stamp.obtained_at ? ` 獲得日時: ${new Date(spot.stamp.obtained_at).toLocaleString("ja-JP")}` : ""}`
-                    : "訪問済みにする、または神話クイズに正解すると御朱印を獲得できます。"}
-                </p>
-                <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                  {token ? (
-                    <button
-                      className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[8px] border border-cyan-200/20 bg-cyan-500/10 px-4 text-sm text-cyan-50 transition hover:bg-cyan-500/18 disabled:opacity-60"
-                      disabled={visit.isPending || Boolean(spot.visited_at)}
-                      onClick={() => visit.mutate()}
-                      type="button"
-                    >
-                      <CheckCircle2 className="h-4 w-4" />
-                      {spot.visited_at ? "訪問済み" : visit.isPending ? "記録中..." : "訪問済みにする"}
-                    </button>
-                  ) : (
-                    <GlowLink href="/login">ログインして御朱印を集める</GlowLink>
-                  )}
-                  <GlowLink href={`/spots/${spot.id}/quiz`}>
-                    <Sparkles className="h-4 w-4" />
-                    神話クイズに挑戦
-                  </GlowLink>
-                </div>
-                {visit.data?.stamp_obtained ? <p className="mt-3 text-sm text-violet-100">御朱印「{visit.data.stamp?.name}」を獲得しました。</p> : null}
+                <h2 className="text-sm font-semibold">解放状態</h2>
               </div>
-            </div>
-          </FeaturePanel>
-          <FeaturePanel className="xl:col-span-2">
+              {token ? (
+                <GlowButton className="w-full" onClick={() => unlock.mutate()} disabled={unlock.isPending || spot.is_unlocked}>
+                  <Gem className="h-4 w-4" />
+                  {unlock.isPending ? "解放中..." : spot.is_unlocked ? "解放済み" : "この絶景を解放する"}
+                </GlowButton>
+              ) : (
+                <GlowLink className="w-full" href="/login">
+                  <Gem className="h-4 w-4" />
+                  ログインして解放する
+                </GlowLink>
+              )}
+              {!spot.is_unlocked ? <p className="mt-3 text-xs leading-5 text-violet-100/80">{spot.unlock_condition}</p> : null}
+              {unlock.isSuccess ? <p className="mt-3 text-center text-sm text-violet-100">解放状態を更新しました。</p> : null}
+            </FeaturePanel>
+            <FeaturePanel>
+              <div className="grid gap-4 sm:grid-cols-[108px_1fr] lg:grid-cols-1">
+                {spot.stamp ? <StampSeal stamp={spot.stamp} locked={!spot.stamp.is_obtained} /> : null}
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 text-cyan-100">
+                    <ScrollText className="h-4 w-4" />
+                    <h2 className="text-sm font-semibold">御朱印</h2>
+                  </div>
+                  <p className="mt-2 text-sm leading-6 text-slate-300">
+                    {spot.stamp?.is_obtained
+                      ? `${spot.stamp.name}を獲得済みです。${spot.stamp.obtained_at ? ` 獲得日時: ${new Date(spot.stamp.obtained_at).toLocaleString("ja-JP")}` : ""}`
+                      : "訪問済みにする、または神話クイズに正解すると御朱印を獲得できます。"}
+                  </p>
+                  <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+                    {token ? (
+                      <button
+                        className="inline-flex min-h-10 items-center justify-center gap-2 rounded-[8px] border border-cyan-200/20 bg-cyan-500/10 px-4 text-sm text-cyan-50 transition hover:bg-cyan-500/18 disabled:opacity-60"
+                        disabled={visit.isPending || Boolean(spot.visited_at)}
+                        onClick={() => visit.mutate()}
+                        type="button"
+                      >
+                        <CheckCircle2 className="h-4 w-4" />
+                        {spot.visited_at ? "訪問済み" : visit.isPending ? "記録中..." : "訪問済みにする"}
+                      </button>
+                    ) : (
+                      <GlowLink href="/login">ログインして御朱印を集める</GlowLink>
+                    )}
+                    <GlowLink href={`/spots/${spot.id}/quiz`}>
+                      <Sparkles className="h-4 w-4" />
+                      神話クイズに挑戦
+                    </GlowLink>
+                  </div>
+                  {visit.data?.stamp_obtained ? <p className="mt-3 text-sm text-violet-100">御朱印「{visit.data.stamp?.name}」を獲得しました。</p> : null}
+                </div>
+              </div>
+            </FeaturePanel>
+          </div>
+          <FeaturePanel className="h-fit lg:col-span-2">
             <div className="mb-5 border-b border-white/10 pb-4">
               <p className="text-xs font-semibold tracking-[0.28em] text-cyan-100/60">INTRODUCTION</p>
               <p className="mt-2 text-sm leading-6 text-slate-300">{spot.description}</p>
             </div>
             <SpotStoryTabs spot={spot} />
           </FeaturePanel>
-          <FeaturePanel className="md:col-span-2 xl:col-span-3">
+          <FeaturePanel className="h-fit lg:col-span-2">
             <Link
               className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-[8px] border border-cyan-200/20 bg-cyan-500/10 text-sm text-cyan-50 transition hover:bg-cyan-500/18"
               href={`/spots/${spot.id}/guide`}
@@ -300,7 +307,7 @@ export default function SpotDetailPage() {
 
 function FeaturePanel({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div className={cn("rounded-[8px] border border-white/10 bg-white/5 p-4 text-sm backdrop-blur-sm", className)}>
+    <div className={cn("h-fit rounded-[8px] border border-white/10 bg-white/5 p-4 text-sm backdrop-blur-sm", className)}>
       {children}
     </div>
   );

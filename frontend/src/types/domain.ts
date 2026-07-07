@@ -27,11 +27,14 @@ export type Spot = {
   mystic_points: number;
   is_initially_unlocked?: boolean;
   is_unlocked: boolean;
+  unlocked_at?: string | null;
   visited_at?: string | null;
   unlock_condition?: string;
   stamp?: Stamp | null;
   stamp_obtained?: boolean;
   obtained_at?: string | null;
+  total_points?: number;
+  answered_quiz_ids?: number[];
   user_progress?: UserProgress | null;
 };
 
@@ -41,13 +44,16 @@ export type SpotMedia = {
   url: string;
   thumbnailUrl?: string | null;
   alt?: string | null;
+  objectPosition?: string | null;
 };
 
 export type UserProgress = {
   is_unlocked: boolean;
+  unlocked_at?: string | null;
   visited_at?: string | null;
   stamp_obtained?: boolean;
   total_points?: number;
+  answered_quiz_ids?: number[];
 };
 
 export type Stamp = {

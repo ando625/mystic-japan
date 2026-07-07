@@ -11,11 +11,15 @@ export function AnimatedSpotImage({
   alt,
   className,
   priority = false,
+  sizes = "(min-width: 1024px) 58vw, 100vw",
+  objectPosition = "center center",
 }: {
   src?: string | null;
   alt: string;
   className?: string;
   priority?: boolean;
+  sizes?: string;
+  objectPosition?: string;
 }) {
   const reduceMotion = useReducedMotion();
   const [currentSrc, setCurrentSrc] = useState(src || defaultImage);
@@ -31,13 +35,13 @@ export function AnimatedSpotImage({
           reduceMotion
             ? {}
             : {
-                scale: [1.02, 1.1, 1.04],
-                x: ["0%", "-1.8%", "1.4%", "0%"],
-                y: ["0%", "-1.2%", "1%", "0%"],
+                scale: [1.04, 1.1, 1.06, 1.04],
+                x: ["0%", "-1.4%", "1%", "0%"],
+                y: ["0%", "-1%", "0.8%", "0%"],
               }
         }
         className="absolute inset-0"
-        transition={{ duration: 20, ease: "easeInOut", repeat: Infinity }}
+        transition={{ duration: 28, ease: "easeInOut", repeat: Infinity, repeatType: "mirror" }}
       >
         <Image
           alt={alt}
@@ -45,8 +49,9 @@ export function AnimatedSpotImage({
           fill
           onError={() => setCurrentSrc(defaultImage)}
           priority={priority}
-          sizes="(min-width: 1024px) 58vw, 100vw"
+          sizes={sizes}
           src={currentSrc}
+          style={{ objectPosition }}
           unoptimized
         />
       </motion.div>

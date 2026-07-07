@@ -51,24 +51,39 @@ export default function SpotQuizPage() {
           return {
             ...current,
             is_unlocked: true,
+            unlocked_at: result.user_progress?.unlocked_at ?? current.unlocked_at,
             visited_at: result.user_progress?.visited_at ?? current.visited_at,
             user_progress: {
               ...current.user_progress,
               ...result.user_progress,
               is_unlocked: true,
-              stamp_obtained: true,
+              stamp_obtained: result.user_progress?.stamp_obtained ?? true,
             },
             stamp: current.stamp
               ? {
                   ...current.stamp,
+                  ...result.stamp,
                   is_obtained: true,
-                  obtained_at: result.stamp?.obtained_at ?? current.stamp.obtained_at ?? new Date().toISOString(),
+                  obtained_at: result.stamp?.obtained_at ?? current.stamp.obtained_at,
                 }
               : result.stamp ?? current.stamp,
             stamp_obtained: true,
+            obtained_at: result.stamp?.obtained_at ?? current.obtained_at,
           };
         });
       }
+      queryClient.setQueryData<Quiz[]>(["spot-quizzes", spotId, token], (current = []) =>
+        current.map((quiz) =>
+          quiz.id === result.quiz_id
+            ? {
+                ...quiz,
+                answered_at: new Date().toISOString(),
+                selected_option: result.selected_option,
+                is_correct: result.is_correct,
+              }
+            : quiz,
+        ),
+      );
       queryClient.invalidateQueries({ queryKey: ["spot-quizzes", spotId] });
       queryClient.invalidateQueries({ queryKey: ["spot", spotId] });
       queryClient.invalidateQueries({ queryKey: ["spots"] });

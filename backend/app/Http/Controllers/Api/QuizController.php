@@ -12,13 +12,14 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
 class QuizController extends Controller
 {
     public function index(Request $request, Spot $spot, ProgressService $progress): AnonymousResourceCollection
     {
-        $user = $request->user();
+        $user = $request->user() ?? Auth::guard('sanctum')->user();
 
         if ($user) {
             $progress->ensureInitialSpots($user);
@@ -59,6 +60,7 @@ class QuizController extends Controller
             $stamp->setAttribute('is_obtained', true);
             $stamp->setAttribute('obtained_at', $obtainedAt);
         }
+        $hasStamp = (bool) ($stamp && $request->user()->stamps()->whereKey($stamp->id)->exists());
 
         return response()->json([
             'quiz_id' => $quiz->id,
@@ -68,7 +70,8 @@ class QuizController extends Controller
             'already_answered' => $result['already_answered'],
             'reward_points' => $result['reward_points'],
             'explanation' => $quiz->explanation,
-            'stamp_obtained' => $result['stamp_obtained'],
+            'stamp_obtained' => $hasStamp,
+            'stamp_newly_obtained' => $result['stamp_obtained'],
             'stamp' => $stamp ? new StampResource($stamp->load('spot')) : null,
             'spot_unlocked' => $result['spot_unlocked'],
             'visited' => (bool) $quiz->spot->userSpots()
@@ -77,9 +80,15 @@ class QuizController extends Controller
                 ->exists(),
             'user_progress' => [
                 'is_unlocked' => (bool) $spotProgress?->is_unlocked,
+                'unlocked_at' => $spotProgress?->unlocked_at ? Carbon::parse($spotProgress->unlocked_at)->toISOString() : null,
                 'visited_at' => $spotProgress?->visited_at ? Carbon::parse($spotProgress->visited_at)->toISOString() : null,
-                'stamp_obtained' => $result['stamp_obtained'] || (bool) ($stamp && $request->user()->stamps()->whereKey($stamp->id)->exists()),
+                'stamp_obtained' => $hasStamp,
                 'total_points' => $progress->totalPoints($request->user()),
+                'answered_quiz_ids' => $request->user()->quizAnswers()
+                    ->whereHas('quiz', fn ($query) => $query->where('spot_id', $quiz->spot_id))
+                    ->pluck('quiz_id')
+                    ->values()
+                    ->all(),
             ],
         ], $result['already_answered'] ? 200 : 201);
     }

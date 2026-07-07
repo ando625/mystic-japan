@@ -9,6 +9,8 @@ use App\Services\ProgressService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class SpotController extends Controller
 {
@@ -30,7 +32,7 @@ class SpotController extends Controller
             $query->where('region', $validated['region']);
         }
 
-        $user = $request->user();
+        $user = $this->optionalUser($request);
 
         if ($user && array_key_exists('unlocked', $validated)) {
             $spotIds = $user->spotProgress()->where('is_unlocked', true)->pluck('spot_id');
@@ -48,7 +50,7 @@ class SpotController extends Controller
     public function show(Request $request, Spot $spot): SpotResource
     {
         $spot->load(['stamp', 'quizzes']);
-        $this->markUnlocked(collect([$spot]), $request->user());
+        $this->markUnlocked(collect([$spot]), $this->optionalUser($request));
 
         return new SpotResource($spot);
     }
@@ -64,9 +66,11 @@ class SpotController extends Controller
             ],
             'user_progress' => [
                 'is_unlocked' => (bool) $result['progress']->is_unlocked,
+                'unlocked_at' => $result['progress']->unlocked_at?->toISOString(),
                 'visited_at' => $result['progress']->visited_at?->toISOString(),
                 'stamp_obtained' => false,
                 'total_points' => $progress->totalPoints($request->user()),
+                'answered_quiz_ids' => $this->answeredQuizIds($request->user(), $spot),
             ],
             'gained_points' => $result['gained_points'],
             'new_achievements' => $result['new_achievements']->map(fn ($achievement) => [
@@ -80,21 +84,31 @@ class SpotController extends Controller
     public function visit(Request $request, Spot $spot, ProgressService $progress): JsonResponse
     {
         $result = $progress->visitSpot($request->user(), $spot->load('stamp'));
+        $obtainedAt = $result['stamp']
+            ? $request->user()->stamps()->whereKey($result['stamp']->id)->value('user_stamps.obtained_at')
+            : null;
 
         return response()->json([
             'spot_id' => $spot->id,
             'visited_at' => $result['progress']->visited_at?->toISOString(),
-            'stamp_obtained' => $result['stamp_obtained'],
+            'stamp_obtained' => (bool) $result['stamp'],
             'stamp' => $result['stamp'] ? [
                 'id' => $result['stamp']->id,
+                'spot_id' => $spot->id,
                 'name' => $result['stamp']->name,
+                'description' => $result['stamp']->description,
+                'image_path' => $result['stamp']->image_path,
                 'rarity' => $result['stamp']->rarity,
+                'is_obtained' => true,
+                'obtained_at' => $obtainedAt ? Carbon::parse($obtainedAt)->toISOString() : null,
             ] : null,
             'user_progress' => [
                 'is_unlocked' => (bool) $result['progress']->is_unlocked,
+                'unlocked_at' => $result['progress']->unlocked_at?->toISOString(),
                 'visited_at' => $result['progress']->visited_at?->toISOString(),
-                'stamp_obtained' => $result['stamp_obtained'] || (bool) ($result['stamp'] && $request->user()->stamps()->whereKey($result['stamp']->id)->exists()),
+                'stamp_obtained' => (bool) $result['stamp'],
                 'total_points' => $progress->totalPoints($request->user()),
+                'answered_quiz_ids' => $this->answeredQuizIds($request->user(), $spot),
             ],
         ]);
     }
@@ -115,16 +129,38 @@ class SpotController extends Controller
             ->keyBy('spot_id');
 
         $obtainedStamps = $user->stamps()->pluck('user_stamps.obtained_at', 'stamps.id');
+        $answeredQuizIds = $user->quizAnswers()
+            ->whereHas('quiz', fn ($query) => $query->whereIn('spot_id', $spots->pluck('id')))
+            ->pluck('quiz_id')
+            ->values();
+        $totalPoints = app(ProgressService::class)->totalPoints($user);
 
-        $spots->each(function (Spot $spot) use ($progress, $obtainedStamps): void {
+        $spots->each(function (Spot $spot) use ($progress, $obtainedStamps, $answeredQuizIds, $totalPoints): void {
             $spotProgress = $progress->get($spot->id);
             $spot->setAttribute('is_unlocked', (bool) $spotProgress?->is_unlocked);
+            $spot->setAttribute('unlocked_at', $spotProgress?->unlocked_at);
             $spot->setAttribute('visited_at', $spotProgress?->visited_at);
+            $spot->setAttribute('total_points', $totalPoints);
+            $spot->setAttribute('answered_quiz_ids', $answeredQuizIds);
 
             if ($spot->stamp) {
                 $spot->stamp->setAttribute('is_obtained', $obtainedStamps->has($spot->stamp->id));
                 $spot->stamp->setAttribute('obtained_at', $obtainedStamps[$spot->stamp->id] ?? null);
             }
         });
+    }
+
+    private function optionalUser(Request $request)
+    {
+        return $request->user() ?? Auth::guard('sanctum')->user();
+    }
+
+    private function answeredQuizIds($user, Spot $spot): array
+    {
+        return $user->quizAnswers()
+            ->whereHas('quiz', fn ($query) => $query->where('spot_id', $spot->id))
+            ->pluck('quiz_id')
+            ->values()
+            ->all();
     }
 }

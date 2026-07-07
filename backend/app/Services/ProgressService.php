@@ -44,10 +44,15 @@ class ProgressService
             ])->save();
         }
 
-        Collection::query()->firstOrCreate(
+        $collection = Collection::query()->firstOrCreate(
             ['user_id' => $user->id, 'spot_id' => $spot->id],
             ['unlocked_at' => $progress->unlocked_at ?? now()],
         );
+
+        if (! $collection->unlocked_at) {
+            $collection->unlocked_at = $progress->unlocked_at ?? now();
+            $collection->save();
+        }
 
         $newAchievements = $alreadyUnlocked ? collect() : $this->achievements->grantUnlockedAchievements($user);
 

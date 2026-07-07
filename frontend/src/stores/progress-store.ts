@@ -35,7 +35,7 @@ export const useProgressStore = create<ProgressState>((set) => ({
     set((state) => ({
       answeredQuizIds: unique([...state.answeredQuizIds, result.quiz_id]),
       obtainedStampIds: result.stamp ? unique([...state.obtainedStampIds, result.stamp.id]) : state.obtainedStampIds,
-      totalPoints: state.totalPoints + result.reward_points,
+      totalPoints: result.user_progress?.total_points ?? state.totalPoints + result.reward_points,
     })),
   markSpotUnlocked: (spotId, points = 0) =>
     set((state) => ({
