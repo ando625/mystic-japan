@@ -1,5 +1,6 @@
 import { fallbackAchievements } from "@/data/fallback-achievements";
 import { fallbackSpots } from "@/data/fallback-spots";
+import type { JsonApiResponse, UnlockSpotResponse, VisitSpotResponse } from "@/types/api";
 import type { Achievement, CollectionSummary, Quiz, QuizAnswerResult, QuizOption, Spot, Stamp, User } from "@/types/domain";
 
 function resolveApiBaseUrl() {
@@ -24,10 +25,6 @@ function resolveApiBaseUrl() {
 }
 
 const apiBaseUrl = resolveApiBaseUrl();
-
-type JsonApiResponse<T> = {
-  data: T;
-};
 
 async function request<T>(path: string, token?: string | null, init?: RequestInit): Promise<T> {
   const response = await fetch(`${apiBaseUrl}${path}`, {
@@ -72,39 +69,13 @@ export async function getSpot(id: number, token?: string | null): Promise<Spot> 
 }
 
 export async function unlockSpot(id: number, token: string) {
-  return request<{
-    collection: { spot_id: number; unlocked_at: string };
-    user_progress?: {
-      is_unlocked: boolean;
-      unlocked_at?: string | null;
-      visited_at?: string | null;
-      stamp_obtained?: boolean;
-      total_points?: number;
-      answered_quiz_ids?: number[];
-    };
-    gained_points: number;
-    new_achievements: Array<{ id: number; title: string }>;
-    already_unlocked: boolean;
-  }>(`/spots/${id}/unlock`, token, {
+  return request<UnlockSpotResponse>(`/spots/${id}/unlock`, token, {
     method: "POST",
   });
 }
 
 export async function visitSpot(id: number, token: string) {
-  return request<{
-    spot_id: number;
-    visited_at: string;
-    stamp_obtained: boolean;
-    stamp?: Stamp | null;
-    user_progress?: {
-      is_unlocked: boolean;
-      unlocked_at?: string | null;
-      visited_at?: string | null;
-      stamp_obtained?: boolean;
-      total_points?: number;
-      answered_quiz_ids?: number[];
-    };
-  }>(`/spots/${id}/visit`, token, {
+  return request<VisitSpotResponse>(`/spots/${id}/visit`, token, {
     method: "POST",
   });
 }

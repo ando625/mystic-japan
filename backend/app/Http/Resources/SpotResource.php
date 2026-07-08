@@ -15,6 +15,8 @@ class SpotResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $showsLore = $this->resource->relationLoaded('collections') || $request->routeIs('spots.show');
+
         return [
             'id' => $this->id,
             'name' => $this->name,
@@ -22,9 +24,9 @@ class SpotResource extends JsonResource
             'prefecture' => $this->prefecture,
             'category' => $this->category,
             'description' => $this->description,
-            'mythology' => $this->when($this->resource->relationLoaded('collections') || $request->routeIs('spots.show'), $this->mythology),
-            'history' => $this->when($this->resource->relationLoaded('collections') || $request->routeIs('spots.show'), $this->history),
-            'trivia' => $this->when($this->resource->relationLoaded('collections') || $request->routeIs('spots.show'), $this->trivia),
+            'mythology' => $this->when($showsLore, $this->mythology),
+            'history' => $this->when($showsLore, $this->history),
+            'trivia' => $this->when($showsLore, $this->trivia),
             'latitude' => (float) $this->latitude,
             'longitude' => (float) $this->longitude,
             'image_url' => $this->image_url,
@@ -36,36 +38,59 @@ class SpotResource extends JsonResource
             'mystic_points' => $this->mystic_points,
             'is_initially_unlocked' => (bool) $this->is_initially_unlocked,
             'is_unlocked' => (bool) ($this->is_unlocked ?? false),
-            'unlocked_at' => $this->unlocked_at ? Carbon::parse($this->unlocked_at)->toISOString() : null,
-            'visited_at' => $this->visited_at ? Carbon::parse($this->visited_at)->toISOString() : null,
-            'user_progress' => [
-                'is_unlocked' => (bool) ($this->is_unlocked ?? false),
-                'unlocked_at' => $this->unlocked_at ? Carbon::parse($this->unlocked_at)->toISOString() : null,
-                'visited_at' => $this->visited_at ? Carbon::parse($this->visited_at)->toISOString() : null,
-                'stamp_obtained' => (bool) ($this->stamp?->is_obtained ?? false),
-                'total_points' => (int) ($this->total_points ?? 0),
-                'answered_quiz_ids' => $this->answered_quiz_ids ?? [],
-            ],
+            'unlocked_at' => $this->isoDate($this->unlocked_at),
+            'visited_at' => $this->isoDate($this->visited_at),
+            'user_progress' => $this->userProgress(),
             'unlock_condition' => $this->unlock_condition ?? 'ログイン後、神域の記憶を読み進めるか神話クイズに正解すると解放できます。',
             'stamp_obtained' => (bool) ($this->stamp?->is_obtained ?? false),
-            'obtained_at' => $this->stamp?->obtained_at ? Carbon::parse($this->stamp->obtained_at)->toISOString() : null,
+            'obtained_at' => $this->isoDate($this->stamp?->obtained_at),
             'total_points' => (int) ($this->total_points ?? 0),
             'answered_quiz_ids' => $this->answered_quiz_ids ?? [],
-            'stamp' => $this->when($this->stamp, fn () => [
-                'id' => $this->stamp->id,
-                'name' => $this->stamp->name,
-                'description' => $this->stamp->description,
-                'image_path' => $this->stamp->image_path,
-                'rarity' => $this->stamp->rarity,
-                'is_obtained' => (bool) ($this->stamp->is_obtained ?? false),
-                'obtained_at' => $this->stamp->obtained_at ? Carbon::parse($this->stamp->obtained_at)->toISOString() : null,
-            ]),
-            'quizzes' => $this->whenLoaded('quizzes', fn () => $this->quizzes->map(fn ($quiz) => [
-                'id' => $quiz->id,
-                'question' => $quiz->question,
-                'reward_points' => $quiz->reward_points,
-            ])->values()),
+            'stamp' => $this->stampPayload(),
+            'quizzes' => $this->quizSummary(),
         ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function userProgress(): array
+    {
+        return [
+            'is_unlocked' => (bool) ($this->is_unlocked ?? false),
+            'unlocked_at' => $this->isoDate($this->unlocked_at),
+            'visited_at' => $this->isoDate($this->visited_at),
+            'stamp_obtained' => (bool) ($this->stamp?->is_obtained ?? false),
+            'total_points' => (int) ($this->total_points ?? 0),
+            'answered_quiz_ids' => $this->answered_quiz_ids ?? [],
+        ];
+    }
+
+    private function stampPayload(): mixed
+    {
+        return $this->when($this->stamp, fn () => [
+            'id' => $this->stamp->id,
+            'name' => $this->stamp->name,
+            'description' => $this->stamp->description,
+            'image_path' => $this->stamp->image_path,
+            'rarity' => $this->stamp->rarity,
+            'is_obtained' => (bool) ($this->stamp->is_obtained ?? false),
+            'obtained_at' => $this->isoDate($this->stamp->obtained_at),
+        ]);
+    }
+
+    private function quizSummary(): mixed
+    {
+        return $this->whenLoaded('quizzes', fn () => $this->quizzes->map(fn ($quiz) => [
+            'id' => $quiz->id,
+            'question' => $quiz->question,
+            'reward_points' => $quiz->reward_points,
+        ])->values());
+    }
+
+    private function isoDate(mixed $value): ?string
+    {
+        return $value ? Carbon::parse($value)->toISOString() : null;
     }
 
     /**

@@ -1,22 +1,389 @@
-# 日本神秘紀行 ～神々の記憶を巡る旅～
+# 日本神秘紀行
 
-「図鑑 × RPG × 神話 × AI × 旅行」を融合した、幻想的な和風ファンタジーWebアプリです。
+**AIでどこまでWebアプリを作れるのかを試した、和風ファンタジーRPG風のポートフォリオ**
 
-このリポジトリは、ユーザーレビューを挟みながら段階的に開発します。現在は **Phase7: Render無料枠デプロイ設定 レビュー待ち** です。
+> Next.js × Laravel × PostgreSQL × Gemini API × ChatGPT画像 × SUNO音楽 × Codex開発
 
-## 開発フェーズ
+---
 
-| Phase | 内容 | 状態 |
-| --- | --- | --- |
-| Phase1 | システム設計 / ER図 / 画面設計 / API設計 / DB設計 | 完了 |
-| Phase2 | Laravel API / DB / Sanctum / Seeder | 完了 |
-| Phase3 | Next.js / UI / 状態管理 / 地図 / 図鑑 | 完了 |
-| Phase4 | AI旅ガイド / Gemini API連携 | 完了 |
-| Phase5 | Framer Motion / 演出 / ページ遷移 / パララックス | 完了 |
-| Phase6 | Docker Compose / Dockerfile / .env.example | 完了 |
-| Phase7 | Render無料枠デプロイ設定 / render.yaml | レビュー待ち |
+## アプリの概要
 
-## Phase1 ドキュメント
+このアプリを一言で言うと、**「日本の神秘スポットをゲームの図鑑のように巡る、和風ファンタジーWebアプリ」**です。
+
+普通の旅行サイトではなく、ゲームのメニュー画面や図鑑のような体験を目指しています。
+
+ユーザーは日本地図や図鑑からスポットを選び、画像・BGM・神話・歴史・豆知識を見ながら、その場所にまつわる物語を楽しめます。
+
+さらに、スポットを解放したり、訪問済みにしたり、神話クイズに答えたりすることで、御朱印やポイントを集められます。
+
+---
+
+## この作品で一番伝えたいこと
+
+このアプリは、**AIを使ってどこまで本格的なWebアプリを作れるか**を試すために作りました。
+
+コードはこの **Codex** を使って作成しています。
+
+画像は **ChatGPT** を使って作成しています。
+
+音楽は **SUNO AI** を使って作成しています。
+
+つまり、この作品は単なるWebアプリではなく、**AIを使った企画・デザイン・開発・素材制作の実験ポートフォリオ**です。
+
+「AIを使えば、個人でもゲームのような世界観を持つWebアプリをどこまで作れるのか」をテーマにしています。
+
+---
+
+## 開発背景
+
+最近は、AIを使えば文章・画像・音楽・コードをかなり高いレベルで作れるようになっています。
+
+そこで、ただ小さな機能を作るだけではなく、**世界観のある1つのアプリをAIと一緒に作り切る**ことに挑戦しました。
+
+テーマには、日本の神話・神社・絶景・旅行を選びました。
+
+理由は、画像や音楽との相性がよく、ゲームのような体験にしやすいからです。
+
+このアプリでは、観光情報をただ並べるのではなく、ユーザーが少しずつ場所を解放していく「図鑑RPG」のような形にしています。
+
+---
+
+## こだわったポイント
+
+### 1. AIで作った世界観
+
+このアプリの大きな特徴は、コードだけでなく、画像や音楽もAIを使って作っていることです。
+
+- コード: Codex
+- 画像: ChatGPT
+- 音楽: SUNO AI
+- AI旅ガイド: Gemini API
+
+開発・見た目・音・AI会話まで、できるだけAIを活用しています。
+
+### 2. 旅行サイトではなくゲームUI
+
+明るい観光サイトではなく、夜空・紫・青・神社・神秘的な光を使い、和風ファンタジーRPGのような雰囲気を目指しました。
+
+ホーム画面、スポット詳細、御朱印帳、クイズ画面も、ゲームのメニュー画面を意識しています。
+
+### 3. スポットを解放していく体験
+
+スポットはただ見るだけではなく、ユーザーごとに解放状態を持っています。
+
+ログインしたユーザーは、スポットを解放したり、訪問済みにしたりできます。
+
+進行状況はDBに保存されるため、リロードしても状態が残ります。
+
+### 4. 御朱印コレクション
+
+スポットを訪問済みにしたり、神話クイズに正解したりすると、御朱印を獲得できます。
+
+御朱印帳では、取得済みと未取得を分けて表示します。
+
+### 5. 神話クイズ
+
+スポットごとに神話や歴史に関する4択クイズがあります。
+
+正解するとポイントや御朱印がもらえます。
+
+同じクイズで報酬が何度も増えないようにしています。
+
+### 6. AI旅ガイド
+
+スポットについて質問できるAIガイドを用意しています。
+
+Next.jsからLaravel APIを呼び、LaravelからGemini APIへ質問を送ります。
+
+スポット名・神話・歴史・豆知識などをプロンプトに入れることで、その場所に合った回答を返せるようにしています。
+
+### 7. BGMつきの体験
+
+アプリ全体のBGMと、スポットごとのBGMを用意しています。
+
+音楽はSUNO AIで作成しています。
+
+画像だけでなく音も使うことで、ゲームのような没入感を出しています。
+
+### 8. 画像がゆっくり動く演出
+
+スポット詳細では、画像が少しずつズームしたり動いたりします。
+
+本物の動画ではなく、Framer Motionを使って静止画を動画のように見せています。
+
+### 9. Render無料枠へのデプロイ
+
+Renderで動かせるように、`render.yaml` とDockerfileを用意しています。
+
+画像や音楽はアップロード保存ではなく、URLやpublic配下のファイルとして扱う形にしています。
+
+---
+
+## 主な機能
+
+- ホーム画面
+- 日本地図
+- スポット一覧
+- スポット詳細
+- 複数画像の切り替え
+- BGM再生
+- AI旅ガイド
+- ログイン / 新規登録
+- スポット解放
+- 訪問済み記録
+- 御朱印帳
+- 神話クイズ
+- 称号 / 実績
+- コレクション進捗
+- Renderデプロイ設定
+
+---
+
+## 使用技術
+
+### フロントエンド
+
+- Next.js
+- TypeScript
+- Tailwind CSS
+- Framer Motion
+- TanStack Query
+- Zustand
+- React Leaflet
+
+### バックエンド
+
+- Laravel 12
+- Laravel Sanctum
+- REST API
+- PostgreSQL
+
+### AI
+
+- Codex: コード作成、設計、リファクタリング
+- ChatGPT: 画像作成、世界観づくり
+- SUNO AI: BGM作成
+- Gemini API: AI旅ガイド
+
+### 開発・デプロイ
+
+- Docker Compose
+- Dockerfile
+- Render
+- GitHub
+
+---
+
+## 画面とファイルの場所
+
+### フロントエンド
+
+画面は主に `frontend/src/app` にあります。
+
+| 画面 | ファイル |
+| --- | --- |
+| ホーム | `frontend/src/app/page.tsx` |
+| 地図 | `frontend/src/app/map/page.tsx` |
+| スポット一覧 | `frontend/src/app/spots/page.tsx` |
+| スポット詳細 | `frontend/src/app/spots/[id]/page.tsx` |
+| AI旅ガイド | `frontend/src/app/spots/[id]/guide/page.tsx` |
+| 神話クイズ | `frontend/src/app/spots/[id]/quiz/page.tsx` |
+| 御朱印帳 | `frontend/src/app/stamps/page.tsx` |
+| 称号 | `frontend/src/app/achievements/page.tsx` |
+| コレクション | `frontend/src/app/collection/page.tsx` |
+| ログイン | `frontend/src/app/login/page.tsx` |
+
+### よく使うUI部品
+
+| 内容 | ファイル |
+| --- | --- |
+| スポットカード | `frontend/src/components/spot/SpotCard.tsx` |
+| スポット画像表示 | `frontend/src/components/spot/SpotDetailMedia.tsx` |
+| 動く画像演出 | `frontend/src/components/spot/AnimatedSpotImage.tsx` |
+| AIガイド | `frontend/src/components/spot/AiGuideChat.tsx` |
+| BGMパネル | `frontend/src/components/spot/BgmPanel.tsx` |
+| 解放パネル | `frontend/src/components/spot/SpotUnlockPanel.tsx` |
+| 御朱印パネル | `frontend/src/components/spot/SpotStampPanel.tsx` |
+| 神話/歴史/豆知識タブ | `frontend/src/components/spot/SpotStoryTabs.tsx` |
+| 下部ナビ | `frontend/src/components/ui/BottomNav.tsx` |
+| 御朱印表示 | `frontend/src/components/stamp/StampSeal.tsx` |
+
+### フロントの状態管理
+
+| 内容 | ファイル |
+| --- | --- |
+| ログイン状態 | `frontend/src/stores/auth-store.ts` |
+| BGM状態 | `frontend/src/stores/bgm-store.ts` |
+| 進行状態 | `frontend/src/stores/progress-store.ts` |
+| API呼び出し | `frontend/src/lib/api.ts` |
+| APIの型 | `frontend/src/types/api.ts` |
+| アプリの型 | `frontend/src/types/domain.ts` |
+
+### 画像と音楽
+
+| 内容 | 場所 |
+| --- | --- |
+| ホーム画像 | `frontend/public/images/home` |
+| スポット画像 | `frontend/public/images/spots` |
+| BGM | `frontend/public/music` |
+| アプリ共通BGM設定 | `frontend/src/data/app-bgm.ts` |
+
+---
+
+## バックエンドのファイル
+
+### APIルート
+
+```txt
+backend/routes/api.php
+```
+
+APIのURLが書かれています。
+
+### Controller
+
+| 内容 | ファイル |
+| --- | --- |
+| 認証 | `backend/app/Http/Controllers/Api/AuthController.php` |
+| スポット | `backend/app/Http/Controllers/Api/SpotController.php` |
+| 御朱印 | `backend/app/Http/Controllers/Api/StampController.php` |
+| クイズ | `backend/app/Http/Controllers/Api/QuizController.php` |
+| AI旅ガイド | `backend/app/Http/Controllers/Api/AiGuideController.php` |
+| 称号 | `backend/app/Http/Controllers/Api/AchievementController.php` |
+| コレクション | `backend/app/Http/Controllers/Api/CollectionController.php` |
+
+### Service
+
+| 内容 | ファイル |
+| --- | --- |
+| ゲーム進行 | `backend/app/Services/ProgressService.php` |
+| AI旅ガイド | `backend/app/Services/AiGuideService.php` |
+| 称号判定 | `backend/app/Services/AchievementService.php` |
+
+### Model
+
+| 内容 | ファイル |
+| --- | --- |
+| スポット | `backend/app/Models/Spot.php` |
+| 御朱印 | `backend/app/Models/Stamp.php` |
+| クイズ | `backend/app/Models/Quiz.php` |
+| ユーザーのスポット進行 | `backend/app/Models/UserSpot.php` |
+| ユーザーの御朱印 | `backend/app/Models/UserStamp.php` |
+| クイズ回答 | `backend/app/Models/QuizAnswer.php` |
+| 称号 | `backend/app/Models/Achievement.php` |
+
+### 初期データ
+
+| 内容 | ファイル |
+| --- | --- |
+| スポット | `backend/database/seeders/SpotSeeder.php` |
+| 御朱印 | `backend/database/seeders/StampSeeder.php` |
+| クイズ | `backend/database/seeders/QuizSeeder.php` |
+| 称号 | `backend/database/seeders/AchievementSeeder.php` |
+| デモユーザー | `backend/database/seeders/DemoUserSeeder.php` |
+
+---
+
+## データの流れ
+
+### スポット詳細を見る流れ
+
+```txt
+Next.js
+  ↓
+Laravel API
+  ↓
+PostgreSQL
+  ↓
+Laravel API
+  ↓
+Next.jsで表示
+```
+
+### AI旅ガイドの流れ
+
+```txt
+Next.jsで質問
+  ↓
+Laravel API
+  ↓
+Gemini API
+  ↓
+Laravel API
+  ↓
+Next.jsに回答を表示
+```
+
+### 御朱印を獲得する流れ
+
+```txt
+スポット訪問 or クイズ正解
+  ↓
+Laravel API
+  ↓
+user_stamps に保存
+  ↓
+御朱印帳で取得済み表示
+```
+
+---
+
+## 開発で学んだこと
+
+### 1. AIを使うと開発スピードが大きく上がる
+
+Codexを使うことで、画面、API、DB、Docker、Render設定まで一気に進められました。
+
+ただし、AIが作ったコードをそのまま使うだけではなく、エラーを確認し、動作を見て、何度も直す必要がありました。
+
+### 2. 画像と音楽もAIで作ると世界観を作りやすい
+
+ChatGPTで画像を作り、SUNO AIでBGMを作ることで、個人開発でもゲームのような雰囲気を出せました。
+
+コードだけでなく、素材もAIで作れることを体験できました。
+
+### 3. フロントとバックエンドの状態を合わせるのが大事
+
+スポット詳細では御朱印が取得済みなのに、御朱印帳では未取得になる問題がありました。
+
+原因は、画面ごとに見ているAPIや状態がずれていたことです。
+
+DBの状態を正しくAPIで返し、フロントで同じ状態を見ることの大切さを学びました。
+
+### 4. 見た目を良くするには何度も調整が必要
+
+AIで最初の形は作れますが、余白、カードの高さ、画像の見え方、スマホ表示などは、実際に見ながら何度も調整しました。
+
+ゲームらしいUIに近づけるには、細かい修正がかなり大事でした。
+
+---
+
+## 開発コマンド
+
+### フロントエンド
+
+```bash
+cd frontend
+npm run lint
+npm run build
+```
+
+### バックエンド
+
+```bash
+cd backend
+php artisan test
+```
+
+### Docker
+
+```bash
+docker compose up -d --build
+```
+
+---
+
+## ドキュメント
 
 - [システム設計](./docs/01-system-design.md)
 - [ER図](./docs/02-er-diagram.md)
@@ -28,18 +395,12 @@
 - [Docker起動手順](./docs/08-docker.md)
 - [Renderデプロイ手順](./docs/09-render.md)
 
-## 設計上の重要方針
+---
 
-- 旅行サイトではなく、和風ファンタジーRPGのメニュー画面として設計する。
-- 初心者が追いやすい Laravel 標準構成を使い、Repository / DDD は採用しない。
-- 画像・音楽・動画はアップロード保存せず、DBにURLのみ保持する。
-- AI旅ガイドは Next.js から Laravel API を経由し、Laravel から Gemini API を呼び出す。
-- Render無料枠を前提に、バックエンド・フロントエンド・PostgreSQLを分離して設計する。
+## まとめ
 
-## レビュー観点
+このアプリは、**AIを使って、企画・コード・画像・音楽まで含めたWebアプリ制作に挑戦したポートフォリオ**です。
 
-Phase7レビューでは、以下を確認してください。
+完成度の高いサービスを目指すだけでなく、AIを使った開発の流れや、AIで作った素材をWebアプリに組み込む流れを学ぶために作りました。
 
-- `render.yaml` のサービス名・リージョン・無料枠前提に違和感がないか
-- Render作成時に `APP_KEY` / `GEMINI_API_KEY` を手入力する運用でよいか
-- Free Postgresの30日期限を許容できるか
+個人でも、AIをうまく使えば、ゲームのような世界観を持つWebアプリを作れるということを示す作品です。
