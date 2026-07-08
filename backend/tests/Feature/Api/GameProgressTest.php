@@ -36,36 +36,56 @@ class GameProgressTest extends TestCase
         $this->assertDatabaseCount('user_stamps', 1);
     }
 
-    public function test_correct_quiz_answer_grants_reward_and_stamp_once(): void
+    public function test_three_correct_quiz_answers_grant_stamp_once(): void
     {
         $this->seed();
 
         $user = User::factory()->create();
-        $quiz = Quiz::query()->with('spot.stamp')->firstOrFail();
+        $spot = Spot::query()->with('stamp')->has('quizzes', '>=', 3)->firstOrFail();
+        $quizzes = $spot->quizzes()->orderBy('id')->take(3)->get();
         Sanctum::actingAs($user);
 
-        $first = $this->postJson("/api/quizzes/{$quiz->id}/answer", [
-            'selected_option' => $quiz->correct_option,
+        $first = $this->postJson("/api/quizzes/{$quizzes[0]->id}/answer", [
+            'selected_option' => $quizzes[0]->correct_option,
         ]);
-        $second = $this->postJson("/api/quizzes/{$quiz->id}/answer", [
-            'selected_option' => $quiz->correct_option,
+        $second = $this->postJson("/api/quizzes/{$quizzes[1]->id}/answer", [
+            'selected_option' => $quizzes[1]->correct_option,
+        ]);
+        $third = $this->postJson("/api/quizzes/{$quizzes[2]->id}/answer", [
+            'selected_option' => $quizzes[2]->correct_option,
+        ]);
+        $duplicate = $this->postJson("/api/quizzes/{$quizzes[2]->id}/answer", [
+            'selected_option' => $quizzes[2]->correct_option,
         ]);
 
         $first->assertCreated()
             ->assertJsonPath('is_correct', true)
-            ->assertJsonPath('reward_points', $quiz->reward_points)
-            ->assertJsonPath('stamp_obtained', true);
+            ->assertJsonPath('reward_points', $quizzes[0]->reward_points)
+            ->assertJsonPath('correct_answers_count', 1)
+            ->assertJsonPath('stamp_obtained', false);
 
-        $second->assertOk()
+        $second->assertCreated()
+            ->assertJsonPath('is_correct', true)
+            ->assertJsonPath('correct_answers_count', 2)
+            ->assertJsonPath('stamp_obtained', false);
+
+        $third->assertCreated()
+            ->assertJsonPath('is_correct', true)
+            ->assertJsonPath('correct_answers_count', 3)
+            ->assertJsonPath('stamp_obtained', true)
+            ->assertJsonPath('stamp_newly_obtained', true)
+            ->assertJsonPath('user_progress.stamp_obtained', true);
+
+        $duplicate->assertOk()
             ->assertJsonPath('already_answered', true)
             ->assertJsonPath('reward_points', 0)
             ->assertJsonPath('stamp_obtained', true)
             ->assertJsonPath('user_progress.stamp_obtained', true);
 
-        $this->assertDatabaseCount('quiz_answers', 1);
+        $this->assertDatabaseCount('quiz_answers', 3);
         $this->assertDatabaseHas('user_stamps', [
             'user_id' => $user->id,
-            'stamp_id' => $quiz->spot->stamp->id,
+            'stamp_id' => $spot->stamp->id,
         ]);
     }
 

@@ -92,8 +92,11 @@ export type QuizAnswerResult = {
   reward_points: number;
   explanation: string;
   stamp_obtained: boolean;
+  stamp_newly_obtained?: boolean;
   stamp?: Stamp | null;
   spot_unlocked: boolean;
+  correct_answers_count?: number;
+  required_correct_answers?: number;
   visited?: boolean;
   user_progress?: UserProgress;
 };

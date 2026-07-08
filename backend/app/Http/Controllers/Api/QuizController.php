@@ -51,16 +51,17 @@ class QuizController extends Controller
         $spotProgress = $quiz->spot->userSpots()
             ->where('user_id', $request->user()->id)
             ->first();
-        $stamp = $result['stamp'];
+        $spotStamp = $quiz->spot->stamp;
+        $hasStamp = (bool) ($spotStamp && $request->user()->stamps()->whereKey($spotStamp->id)->exists());
+        $stamp = $hasStamp ? $spotStamp : $result['stamp'];
 
-        if ($stamp) {
+        if ($stamp && $hasStamp) {
             $obtainedAt = $request->user()->stamps()
                 ->whereKey($stamp->id)
                 ->value('user_stamps.obtained_at');
             $stamp->setAttribute('is_obtained', true);
             $stamp->setAttribute('obtained_at', $obtainedAt);
         }
-        $hasStamp = (bool) ($stamp && $request->user()->stamps()->whereKey($stamp->id)->exists());
 
         return response()->json([
             'quiz_id' => $quiz->id,
@@ -74,6 +75,8 @@ class QuizController extends Controller
             'stamp_newly_obtained' => $result['stamp_obtained'],
             'stamp' => $stamp ? new StampResource($stamp->load('spot')) : null,
             'spot_unlocked' => $result['spot_unlocked'],
+            'correct_answers_count' => $result['correct_answers_count'],
+            'required_correct_answers' => $result['required_correct_answers'],
             'visited' => (bool) $quiz->spot->userSpots()
                 ->where('user_id', $request->user()->id)
                 ->whereNotNull('visited_at')

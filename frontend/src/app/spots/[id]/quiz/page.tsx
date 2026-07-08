@@ -30,6 +30,12 @@ export default function SpotQuizPage() {
     queryKey: ["spot-quizzes", spotId, token],
     queryFn: () => getSpotQuizzes(spotId, token),
   });
+  const requiredCorrectAnswers = 3;
+  const correctAnswersCount = quizzes.filter((quiz) => {
+    const result = results[quiz.id];
+
+    return result?.is_correct ?? quiz.is_correct;
+  }).length;
 
   const answer = useMutation({
     mutationFn: ({ quizId, selectedOption }: { quizId: number; selectedOption: QuizOption }) => {
@@ -42,36 +48,37 @@ export default function SpotQuizPage() {
     onSuccess: (result) => {
       setResults((current) => ({ ...current, [result.quiz_id]: result }));
       applyQuizResult(result);
-      if (result.is_correct) {
-        queryClient.setQueryData<Spot>(["spot", spotId, token], (current) => {
-          if (!current) {
-            return current;
-          }
+      queryClient.setQueryData<Spot>(["spot", spotId, token], (current) => {
+        if (!current) {
+          return current;
+        }
 
-          return {
-            ...current,
-            is_unlocked: true,
-            unlocked_at: result.user_progress?.unlocked_at ?? current.unlocked_at,
-            visited_at: result.user_progress?.visited_at ?? current.visited_at,
-            user_progress: {
-              ...current.user_progress,
-              ...result.user_progress,
-              is_unlocked: true,
-              stamp_obtained: result.user_progress?.stamp_obtained ?? true,
-            },
-            stamp: current.stamp
-              ? {
-                  ...current.stamp,
-                  ...result.stamp,
-                  is_obtained: true,
-                  obtained_at: result.stamp?.obtained_at ?? current.stamp.obtained_at,
-                }
-              : result.stamp ?? current.stamp,
-            stamp_obtained: true,
-            obtained_at: result.stamp?.obtained_at ?? current.obtained_at,
-          };
-        });
-      }
+        const stampObtained = result.user_progress?.stamp_obtained ?? result.stamp_obtained ?? current.stamp_obtained ?? false;
+        const isUnlocked = result.user_progress?.is_unlocked ?? current.is_unlocked;
+
+        return {
+          ...current,
+          is_unlocked: isUnlocked,
+          unlocked_at: result.user_progress?.unlocked_at ?? current.unlocked_at,
+          visited_at: result.user_progress?.visited_at ?? current.visited_at,
+          user_progress: {
+            ...current.user_progress,
+            ...result.user_progress,
+            is_unlocked: isUnlocked,
+            stamp_obtained: stampObtained,
+          },
+          stamp: current.stamp
+            ? {
+                ...current.stamp,
+                ...result.stamp,
+                is_obtained: stampObtained,
+                obtained_at: result.stamp?.obtained_at ?? current.stamp.obtained_at,
+              }
+            : result.stamp ?? current.stamp,
+          stamp_obtained: stampObtained,
+          obtained_at: result.stamp?.obtained_at ?? current.obtained_at,
+        };
+      });
       queryClient.setQueryData<Quiz[]>(["spot-quizzes", spotId, token], (current = []) =>
         current.map((quiz) =>
           quiz.id === result.quiz_id
@@ -108,6 +115,21 @@ export default function SpotQuizPage() {
         </GlassPanel>
       ) : (
         <div className="grid gap-5">
+          <GlassPanel className="p-5">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-xs tracking-[0.3em] text-cyan-100/70">GOSHUIN CHALLENGE</p>
+                <h2 className="mt-2 text-lg font-semibold text-white">4問中3問以上正解で御朱印獲得</h2>
+                <p className="mt-2 text-sm leading-6 text-slate-300">
+                  同じスポットのクイズで3問以上正解すると、この神域の御朱印が記録されます。
+                </p>
+              </div>
+              <span className="inline-flex items-center gap-2 rounded-full border border-violet-300/25 bg-violet-500/14 px-4 py-2 text-sm text-violet-100">
+                <ScrollText className="h-4 w-4" />
+                {correctAnswersCount} / {requiredCorrectAnswers}
+              </span>
+            </div>
+          </GlassPanel>
           {quizzes.map((quiz, index) => (
             <QuizCard
               key={quiz.id}
@@ -183,10 +205,15 @@ function QuizCard({
             {result?.already_answered ? " / 回答済みのため報酬は重複しません" : null}
           </div>
           {explanation ? <p className="mt-3 text-sm leading-6 text-slate-300">{explanation}</p> : null}
-          {result?.stamp_obtained ? (
+          {result?.stamp_newly_obtained ? (
             <p className="mt-3 inline-flex items-center gap-2 text-sm text-violet-100">
               <ScrollText className="h-4 w-4" />
               御朱印「{result.stamp?.name}」を獲得しました
+            </p>
+          ) : result?.is_correct && !result.stamp_obtained ? (
+            <p className="mt-3 inline-flex items-center gap-2 text-sm text-violet-100">
+              <ScrollText className="h-4 w-4" />
+              御朱印獲得まであと{Math.max((result.required_correct_answers ?? 3) - (result.correct_answers_count ?? 0), 0)}問正解
             </p>
           ) : null}
         </div>

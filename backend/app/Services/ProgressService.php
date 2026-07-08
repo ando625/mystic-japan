@@ -13,6 +13,8 @@ use App\Models\UserStamp;
 
 class ProgressService
 {
+    private const STAMP_REQUIRED_CORRECT_ANSWERS = 3;
+
     public function __construct(private readonly AchievementService $achievements) {}
 
     public function ensureInitialSpots(User $user): void
@@ -106,7 +108,7 @@ class ProgressService
     }
 
     /**
-     * @return array{answer: QuizAnswer, is_correct: bool, already_answered: bool, reward_points: int, stamp: Stamp|null, stamp_obtained: bool, spot_unlocked: bool}
+     * @return array{answer: QuizAnswer, is_correct: bool, already_answered: bool, reward_points: int, stamp: Stamp|null, stamp_obtained: bool, spot_unlocked: bool, correct_answers_count: int, required_correct_answers: int}
      */
     public function answerQuiz(User $user, Quiz $quiz, string $selectedOption): array
     {
@@ -116,26 +118,18 @@ class ProgressService
             ->first();
 
         if ($existing) {
-            $stampResult = null;
-            $spotUnlock = ['already_unlocked' => true];
-
-            // Older sessions may have a correct answer saved before unlock and
-            // stamp rewards were fully wired. Repair that progression here
-            // without granting duplicate quiz points.
-            if ($existing->is_correct) {
-                $spotUnlock = $this->unlockSpot($user, $quiz->spot);
-                $this->markVisited($spotUnlock['progress']);
-                $stampResult = $quiz->spot->stamp ? $this->obtainStamp($user, $quiz->spot->stamp) : null;
-            }
+            $reward = $this->grantSpotQuizCompletionReward($user, $quiz);
 
             return [
                 'answer' => $existing,
                 'is_correct' => $existing->is_correct,
                 'already_answered' => true,
                 'reward_points' => 0,
-                'stamp' => $stampResult['stamp'] ?? null,
-                'stamp_obtained' => $stampResult ? ! $stampResult['already_obtained'] : false,
-                'spot_unlocked' => $existing->is_correct && ! $spotUnlock['already_unlocked'],
+                'stamp' => $reward['stamp'],
+                'stamp_obtained' => $reward['stamp_obtained'],
+                'spot_unlocked' => $reward['spot_unlocked'],
+                'correct_answers_count' => $reward['correct_answers_count'],
+                'required_correct_answers' => self::STAMP_REQUIRED_CORRECT_ANSWERS,
             ];
         }
 
@@ -148,24 +142,50 @@ class ProgressService
             'answered_at' => now(),
         ]);
 
-        $stampResult = null;
-        $spotUnlock = ['already_unlocked' => true];
-
-        if ($isCorrect) {
-            $spotUnlock = $this->unlockSpot($user, $quiz->spot);
-            $this->markVisited($spotUnlock['progress']);
-            $stampResult = $quiz->spot->stamp ? $this->obtainStamp($user, $quiz->spot->stamp) : null;
-        }
+        $reward = $this->grantSpotQuizCompletionReward($user, $quiz);
 
         return [
             'answer' => $answer,
             'is_correct' => $isCorrect,
             'already_answered' => false,
             'reward_points' => $isCorrect ? $quiz->reward_points : 0,
+            'stamp' => $reward['stamp'],
+            'stamp_obtained' => $reward['stamp_obtained'],
+            'spot_unlocked' => $reward['spot_unlocked'],
+            'correct_answers_count' => $reward['correct_answers_count'],
+            'required_correct_answers' => self::STAMP_REQUIRED_CORRECT_ANSWERS,
+        ];
+    }
+
+    /**
+     * @return array{stamp: Stamp|null, stamp_obtained: bool, spot_unlocked: bool, correct_answers_count: int}
+     */
+    private function grantSpotQuizCompletionReward(User $user, Quiz $quiz): array
+    {
+        $correctAnswersCount = $this->correctAnswersCountForSpot($user, $quiz->spot);
+        $stampResult = null;
+        $spotUnlock = ['already_unlocked' => true];
+
+        if ($correctAnswersCount >= self::STAMP_REQUIRED_CORRECT_ANSWERS) {
+            $spotUnlock = $this->unlockSpot($user, $quiz->spot);
+            $this->markVisited($spotUnlock['progress']);
+            $stampResult = $quiz->spot->stamp ? $this->obtainStamp($user, $quiz->spot->stamp) : null;
+        }
+
+        return [
             'stamp' => $stampResult['stamp'] ?? null,
             'stamp_obtained' => $stampResult ? ! $stampResult['already_obtained'] : false,
-            'spot_unlocked' => $isCorrect && ! $spotUnlock['already_unlocked'],
+            'spot_unlocked' => ! $spotUnlock['already_unlocked'],
+            'correct_answers_count' => $correctAnswersCount,
         ];
+    }
+
+    private function correctAnswersCountForSpot(User $user, Spot $spot): int
+    {
+        return $user->quizAnswers()
+            ->where('is_correct', true)
+            ->whereHas('quiz', fn ($query) => $query->where('spot_id', $spot->id))
+            ->count();
     }
 
     private function markVisited(UserSpot $progress): void
