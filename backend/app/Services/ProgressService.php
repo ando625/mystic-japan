@@ -67,27 +67,24 @@ class ProgressService
     }
 
     /**
-     * Marks a spot as visited. Visiting is treated as "clearing" the spot and
-     * grants the linked goshuin stamp once.
-     *
      * @return array{progress: UserSpot, stamp: Stamp|null, stamp_obtained: bool}
      */
     public function visitSpot(User $user, Spot $spot): array
     {
-        $unlock = $this->unlockSpot($user, $spot);
-        $progress = $unlock['progress'];
+        $progress = UserSpot::query()->firstOrCreate([
+            'user_id' => $user->id,
+            'spot_id' => $spot->id,
+        ]);
 
         if (! $progress->visited_at) {
             $progress->visited_at = now();
             $progress->save();
         }
 
-        $stampResult = $spot->stamp ? $this->obtainStamp($user, $spot->stamp) : null;
-
         return [
             'progress' => $progress,
-            'stamp' => $stampResult['stamp'] ?? null,
-            'stamp_obtained' => $stampResult ? ! $stampResult['already_obtained'] : false,
+            'stamp' => null,
+            'stamp_obtained' => false,
         ];
     }
 
@@ -186,6 +183,37 @@ class ProgressService
             ->where('is_correct', true)
             ->whereHas('quiz', fn ($query) => $query->where('spot_id', $spot->id))
             ->count();
+    }
+
+    /**
+     * @return array{can_retry: bool, deleted_answers: int, correct_answers_count: int, required_correct_answers: int}
+     */
+    public function retrySpotQuizzes(User $user, Spot $spot): array
+    {
+        $correctAnswersCount = $this->correctAnswersCountForSpot($user, $spot);
+        $hasStamp = (bool) ($spot->stamp && $user->stamps()->whereKey($spot->stamp->id)->exists());
+
+        if ($hasStamp || $correctAnswersCount >= self::STAMP_REQUIRED_CORRECT_ANSWERS) {
+            return [
+                'can_retry' => false,
+                'deleted_answers' => 0,
+                'correct_answers_count' => $correctAnswersCount,
+                'required_correct_answers' => self::STAMP_REQUIRED_CORRECT_ANSWERS,
+            ];
+        }
+
+        $quizIds = $spot->quizzes()->pluck('id');
+        $deletedAnswers = QuizAnswer::query()
+            ->where('user_id', $user->id)
+            ->whereIn('quiz_id', $quizIds)
+            ->delete();
+
+        return [
+            'can_retry' => true,
+            'deleted_answers' => $deletedAnswers,
+            'correct_answers_count' => 0,
+            'required_correct_answers' => self::STAMP_REQUIRED_CORRECT_ANSWERS,
+        ];
     }
 
     private function markVisited(UserSpot $progress): void

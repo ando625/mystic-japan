@@ -19,3 +19,11 @@ export type VisitSpotResponse = {
   stamp?: Stamp | null;
   user_progress?: UserProgress;
 };
+
+export type RetrySpotQuizzesResponse = {
+  can_retry: boolean;
+  deleted_answers: number;
+  correct_answers_count: number;
+  required_correct_answers: number;
+  answered_quiz_ids: number[];
+};

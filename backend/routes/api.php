@@ -28,5 +28,6 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/me/stamps', [StampController::class, 'mine']);
     Route::post('/stamps/{stamp}/obtain', [StampController::class, 'obtain']);
     Route::post('/quizzes/{quiz}/answer', [QuizController::class, 'answer']);
+    Route::post('/spots/{spot}/quizzes/retry', [QuizController::class, 'retry']);
     Route::post('/ai/guide', AiGuideController::class);
 });

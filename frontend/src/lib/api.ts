@@ -1,6 +1,6 @@
 import { fallbackAchievements } from "@/data/fallback-achievements";
 import { fallbackSpots } from "@/data/fallback-spots";
-import type { JsonApiResponse, UnlockSpotResponse, VisitSpotResponse } from "@/types/api";
+import type { JsonApiResponse, RetrySpotQuizzesResponse, UnlockSpotResponse, VisitSpotResponse } from "@/types/api";
 import type { Achievement, CollectionSummary, Quiz, QuizAnswerResult, QuizOption, Spot, Stamp, User } from "@/types/domain";
 
 function resolveApiBaseUrl() {
@@ -102,6 +102,12 @@ export async function answerQuiz(quizId: number, selectedOption: QuizOption, tok
   return request<QuizAnswerResult>(`/quizzes/${quizId}/answer`, token, {
     method: "POST",
     body: JSON.stringify({ selected_option: selectedOption }),
+  });
+}
+
+export async function retrySpotQuizzes(spotId: number, token: string): Promise<RetrySpotQuizzesResponse> {
+  return request<RetrySpotQuizzesResponse>(`/spots/${spotId}/quizzes/retry`, token, {
+    method: "POST",
   });
 }
 

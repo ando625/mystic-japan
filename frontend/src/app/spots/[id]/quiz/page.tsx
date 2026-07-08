@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, CheckCircle2, CircleX, Gem, LockKeyhole, ScrollText } from "lucide-react";
+import { ArrowLeft, CheckCircle2, CircleX, Gem, LockKeyhole, RotateCcw, ScrollText } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { answerQuiz, getSpot, getSpotQuizzes } from "@/lib/api";
+import { answerQuiz, getSpot, getSpotQuizzes, retrySpotQuizzes } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth-store";
 import { useProgressStore } from "@/stores/progress-store";
 import type { Quiz, QuizAnswerResult, QuizOption, Spot } from "@/types/domain";
@@ -31,11 +31,14 @@ export default function SpotQuizPage() {
     queryFn: () => getSpotQuizzes(spotId, token),
   });
   const requiredCorrectAnswers = 3;
+  const answeredCount = quizzes.filter((quiz) => Boolean(results[quiz.id]) || Boolean(quiz.answered_at)).length;
   const correctAnswersCount = quizzes.filter((quiz) => {
     const result = results[quiz.id];
 
     return result?.is_correct ?? quiz.is_correct;
   }).length;
+  const stampObtained = Boolean(spot?.stamp?.is_obtained || spot?.stamp_obtained || spot?.user_progress?.stamp_obtained);
+  const canRetry = quizzes.length > 0 && answeredCount === quizzes.length && correctAnswersCount < requiredCorrectAnswers && !stampObtained;
 
   const answer = useMutation({
     mutationFn: ({ quizId, selectedOption }: { quizId: number; selectedOption: QuizOption }) => {
@@ -98,6 +101,30 @@ export default function SpotQuizPage() {
       queryClient.invalidateQueries({ queryKey: ["collection"] });
     },
   });
+  const retry = useMutation({
+    mutationFn: () => {
+      if (!token) {
+        throw new Error("LOGIN_REQUIRED");
+      }
+
+      return retrySpotQuizzes(spotId, token);
+    },
+    onSuccess: () => {
+      setResults({});
+      queryClient.setQueryData<Quiz[]>(["spot-quizzes", spotId, token], (current = []) =>
+        current.map((quiz) => ({
+          ...quiz,
+          answered_at: null,
+          selected_option: null,
+          is_correct: null,
+          explanation: undefined,
+        })),
+      );
+      queryClient.invalidateQueries({ queryKey: ["spot-quizzes", spotId] });
+      queryClient.invalidateQueries({ queryKey: ["spot", spotId] });
+      queryClient.invalidateQueries({ queryKey: ["collection"] });
+    },
+  });
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-8 md:px-8">
@@ -140,6 +167,22 @@ export default function SpotQuizPage() {
               result={results[quiz.id]}
             />
           ))}
+          {canRetry ? (
+            <GlassPanel className="p-5 text-center">
+              <p className="text-sm leading-6 text-slate-300">
+                今回は御朱印獲得条件の3問正解に届きませんでした。回答をリセットして、もう一度挑戦できます。
+              </p>
+              <button
+                className="mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-[8px] border border-violet-300/30 bg-violet-500/20 px-6 text-sm font-semibold text-violet-50 transition hover:bg-violet-500/30 disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={retry.isPending}
+                onClick={() => retry.mutate()}
+                type="button"
+              >
+                <RotateCcw className="h-4 w-4" />
+                {retry.isPending ? "リセット中..." : "もう一回"}
+              </button>
+            </GlassPanel>
+          ) : null}
         </div>
       )}
     </main>

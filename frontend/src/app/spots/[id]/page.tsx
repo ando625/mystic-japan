@@ -6,7 +6,6 @@ import { ArrowLeft, Bot } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { getSpot } from "@/lib/api";
-import { useSpotProgressMutations } from "@/hooks/useSpotProgressMutations";
 import { useAuthStore } from "@/stores/auth-store";
 import { categoryLabel } from "@/data/categories";
 import { AiGuideChat } from "@/components/spot/AiGuideChat";
@@ -14,8 +13,6 @@ import { BgmPanel } from "@/components/spot/BgmPanel";
 import { SpotDetailMedia } from "@/components/spot/SpotDetailMedia";
 import { SpotStampPanel } from "@/components/spot/SpotStampPanel";
 import { SpotStoryTabs } from "@/components/spot/SpotStoryTabs";
-import { SpotUnlockPanel } from "@/components/spot/SpotUnlockPanel";
-import { UnlockModal } from "@/components/spot/UnlockModal";
 import { RarityStars } from "@/components/ui/RarityStars";
 import type { SpotMedia } from "@/types/domain";
 import { cn } from "@/lib/utils";
@@ -24,19 +21,12 @@ export default function SpotDetailPage() {
   const params = useParams<{ id: string }>();
   const spotId = Number(params.id);
   const { token } = useAuthStore();
-  const [showUnlock, setShowUnlock] = useState(false);
   const [selectedMediaId, setSelectedMediaId] = useState<string | number | null>(null);
 
   const { data: spot, isLoading } = useQuery({
     queryKey: ["spot", spotId, token],
     queryFn: () => getSpot(spotId, token),
     enabled: Number.isFinite(spotId),
-  });
-
-  const { unlock, visit } = useSpotProgressMutations({
-    spotId,
-    token,
-    onUnlockSuccess: () => setShowUnlock(true),
   });
 
   const media = useMemo<SpotMedia[]>(() => {
@@ -78,18 +68,8 @@ export default function SpotDetailPage() {
     return <main className="grid min-h-screen place-items-center text-slate-300">神域を読み込み中...</main>;
   }
 
-  const unlockResult = unlock.data;
-  const shouldShowUnlockModal = showUnlock && Boolean(unlockResult) && !unlockResult?.already_unlocked;
-
   return (
     <main className="min-h-screen bg-[#02030a] px-4 pb-40 pt-8 md:px-8">
-      <UnlockModal
-        achievements={unlock.data?.new_achievements ?? []}
-        onClose={() => setShowUnlock(false)}
-        open={shouldShowUnlockModal}
-        points={unlock.data?.gained_points ?? spot.mystic_points}
-        spotName={spot.name}
-      />
       <Link className="mb-5 inline-flex items-center gap-2 text-sm text-cyan-100/80 hover:text-white" href="/spots">
         <ArrowLeft className="h-4 w-4" />
         図鑑へ戻る
@@ -135,10 +115,7 @@ export default function SpotDetailPage() {
               <BgmPanel embedded spot={spot} />
             </FeaturePanel>
             <FeaturePanel>
-              <SpotUnlockPanel spot={spot} token={token} unlock={unlock} />
-            </FeaturePanel>
-            <FeaturePanel>
-              <SpotStampPanel spot={spot} token={token} visit={visit} />
+              <SpotStampPanel spot={spot} token={token} />
             </FeaturePanel>
           </div>
           <FeaturePanel className="h-fit lg:col-span-2">

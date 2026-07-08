@@ -95,4 +95,14 @@ class QuizController extends Controller
             ],
         ], $result['already_answered'] ? 200 : 201);
     }
+
+    public function retry(Request $request, Spot $spot, ProgressService $progress): JsonResponse
+    {
+        $result = $progress->retrySpotQuizzes($request->user(), $spot->load(['stamp', 'quizzes']));
+
+        return response()->json([
+            ...$result,
+            'answered_quiz_ids' => [],
+        ]);
+    }
 }
