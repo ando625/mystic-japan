@@ -6,13 +6,18 @@ import { cn } from "@/lib/utils";
 import { GlassPanel } from "@/components/ui/GlassPanel";
 
 const storyTabs = [
+  // Spot型のキーと表示ラベルを対応させています。
   { key: "mythology", label: "神話" },
   { key: "history", label: "歴史" },
   { key: "trivia", label: "豆知識" },
 ] as const;
 
+// 神話・歴史・豆知識をタブで切り替える説明パネルです。
 export function SpotStoryTabs({ spot }: { spot: Spot }) {
+  // 現在選択中のタブです。初期表示は神話にしています。
   const [tab, setTab] = useState<(typeof storyTabs)[number]["key"]>("mythology");
+
+  // 選択中タブの本文をSpotから取り出します。空なら未登録メッセージを表示します。
   const text = spot[tab] || "この記憶はまだ霧の向こうにあります。";
 
   return (

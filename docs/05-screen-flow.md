@@ -10,6 +10,7 @@ flowchart TD
   Music[BGM再生 /spots/:id/music]
   Lore[神話・歴史・豆知識 /spots/:id/lore]
   Guide[AI旅ガイド /spots/:id/guide]
+  Quiz[神話クイズ /spots/:id/quiz]
   Collection[図鑑 /collection]
   Achievements[ミッション・称号 /achievements]
   Me[マイページ /me]
@@ -25,7 +26,8 @@ flowchart TD
   Detail --> Music
   Detail --> Lore
   Detail --> Guide
-  Detail --> Unlock
+  Detail --> Quiz
+  Quiz --> Unlock
   Unlock --> Detail
   Detail --> Collection
   Collection --> Detail
@@ -49,17 +51,26 @@ flowchart TD
 3. 日本地図へ遷移
 4. ピンを選択
 5. スポット詳細へ遷移
-6. 解放ボタン押下時にログインが必要ならログインへ誘導
+6. 御朱印を集める場合はログインして神話クイズへ進む
 
-### ログイン後の解放
+### ログイン後の御朱印獲得・解放
 
 1. スポット詳細を開く
-2. 「この絶景を解放する」を押す
-3. Laravel APIへ解放リクエスト
-4. `collections` に保存
-5. 称号条件を判定
-6. 解放演出モーダル表示
-7. 神秘ポイントと新規称号を表示
+2. 神話クイズへ進む
+3. 4問のクイズに回答する
+4. 3問以上正解した場合、Laravel APIが `user_stamps` に御朱印を保存する
+5. 同時に `user_spots` / `collections` にスポット解放状態を保存する
+6. 称号条件を判定する
+7. 御朱印獲得・解放演出を表示する
+
+### クイズ再挑戦
+
+1. 神話クイズで4問回答する
+2. 3問正解できなかった場合、画面下部に「もう一回」ボタンを表示する
+3. 「もう一回」を押す
+4. Laravel APIがそのスポットの回答履歴をリセットする
+5. ユーザーは御朱印を獲得するまで再挑戦できる
+6. 御朱印獲得済みの場合はリトライできない
 
 ### AI旅ガイド
 
@@ -76,6 +87,6 @@ flowchart TD
 | --- | --- |
 | ホーム -> 地図 | 星空背景を維持しながらフェード |
 | 地図 -> 詳細 | 選択カードが中央へズーム、背景暗転、詳細フェードイン |
-| 詳細 -> 解放演出 | 背景をぼかし、中央に紫水晶の発光 |
+| クイズ -> 解放演出 | 御朱印獲得時に背景をぼかし、中央に紫水晶の発光 |
 | 一覧 -> 詳細 | カードホバー拡大後、カードを起点にフェード |
 | 詳細内タブ | 横スライドと淡い発光 |

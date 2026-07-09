@@ -15,9 +15,11 @@ type ChatMessage = {
   text: string;
 };
 
+// AI旅ガイド: 入力文をLaravel APIへ送り、Geminiの回答をチャット形式で表示します。
 export function AiGuideChat({ spot, compact = false }: { spot: Spot; compact?: boolean }) {
   const { token } = useAuthStore();
   const [message, setMessage] = useState("");
+  // 画面内だけで持つ会話履歴です。リロードすると初期メッセージに戻ります。
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "guide",
@@ -26,12 +28,14 @@ export function AiGuideChat({ spot, compact = false }: { spot: Spot; compact?: b
   ]);
 
   const suggestions = useMemo(
+    // よく使う質問をスポット名に合わせて生成します。
     () => [`${spot.name}の神話を教えて`, "おすすめの季節は？", "初めて行くなら何を見る？", "写真映えする時間帯は？"],
     [spot.name],
   );
 
   const mutation = useMutation({
     mutationFn: (text: string) => {
+      // AIガイドはユーザーごとの利用として扱うため、未ログイン時はAPIを呼ばずに止めます。
       if (!token) {
         throw new Error("LOGIN_REQUIRED");
       }
@@ -63,6 +67,7 @@ export function AiGuideChat({ spot, compact = false }: { spot: Spot; compact?: b
       return;
     }
 
+    // 先にユーザー発言を表示し、その後APIの回答を追加します。
     setMessages((current) => [...current, { role: "user", text: trimmed }]);
     setMessage("");
     mutation.mutate(trimmed);

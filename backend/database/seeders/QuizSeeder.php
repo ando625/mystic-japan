@@ -11,6 +11,7 @@ class QuizSeeder extends Seeder
     public function run(): void
     {
         Spot::query()->orderBy('id')->each(function (Spot $spot): void {
+            // スポット名をキーにして、その土地専用の4択クイズを取得します。
             $quizzes = $this->quizzesFor($spot->name);
 
             if ($quizzes === []) {
@@ -19,11 +20,13 @@ class QuizSeeder extends Seeder
 
             $questions = collect($quizzes)->pluck('question');
 
+            // Seederを再実行した時に、古いテンプレート問題が残らないよう削除します。
             $spot->quizzes()
                 ->whereNotIn('question', $questions)
                 ->delete();
 
             foreach ($quizzes as $quiz) {
+                // 同じ問題文なら更新、未登録なら作成して、Seederの再実行に強くします。
                 Quiz::query()->updateOrCreate(
                     [
                         'spot_id' => $spot->id,
@@ -43,6 +46,7 @@ class QuizSeeder extends Seeder
      */
     private function quizzesFor(string $spotName): array
     {
+        // 各スポットに4問ずつ用意し、御朱印獲得条件の「4問中3問以上正解」に合わせます。
         return match ($spotName) {
             '青い池' => [
                 $this->quiz('青い池の水に含まれており、コロイドを形成して太陽光を青く反射させている主な成分は何でしょう？', '硫黄', 'アルミニウム', '銅', '鉄', 'B', '白金温泉の湧水に含まれるアルミニウムが美瑛川の水と混ざり、目に見えない粒子（コロイド）が生成されます。これが太陽光を散乱させることで青く見えています。'),
@@ -144,6 +148,7 @@ class QuizSeeder extends Seeder
         string $correctOption,
         string $explanation,
     ): array {
+        // DBのカラム名に合わせて、問題・選択肢・正解・解説を1つの配列に整えます。
         return [
             'question' => $question,
             'option_a' => $optionA,

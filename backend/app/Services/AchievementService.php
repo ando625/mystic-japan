@@ -19,10 +19,12 @@ class AchievementService
         $newAchievements = collect();
 
         Achievement::query()->each(function (Achievement $achievement) use ($user, $newAchievements): void {
+            // すでに獲得済みの称号は再付与しません。
             if ($user->achievements()->whereKey($achievement->id)->exists()) {
                 return;
             }
 
+            // 条件ごとに現在値を計算し、目標値に届いた時だけ付与します。
             $progress = $this->progressFor($user, $achievement);
 
             if ($progress['current'] < $progress['target']) {
@@ -46,6 +48,7 @@ class AchievementService
     {
         $target = $achievement->condition_value;
 
+        // condition_typeを使って、解放数・カテゴリ解放数・達成率などを切り替えます。
         $current = match ($achievement->condition_type) {
             Achievement::CONDITION_UNLOCK_COUNT => $user->collections()->count(),
             Achievement::CONDITION_CATEGORY_UNLOCK_COUNT => $this->categoryUnlockCount($user, $achievement),
@@ -72,6 +75,7 @@ class AchievementService
         $totalSpots = Spot::query()->count();
 
         if ($totalSpots === 0) {
+            // スポットが存在しない状態でもゼロ除算しないようにします。
             return 0;
         }
 

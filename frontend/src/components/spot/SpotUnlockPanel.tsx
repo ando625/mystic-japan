@@ -12,6 +12,8 @@ type SpotUnlockPanelProps = {
   unlock: UseMutationResult<UnlockSpotResponse, Error, void, unknown>;
 };
 
+// スポット解放ボタン用の古い互換コンポーネントです。
+// 現在の仕様では御朱印獲得時に解放されるため、通常の詳細画面では使っていません。
 export function SpotUnlockPanel({ spot, token, unlock }: SpotUnlockPanelProps) {
   return (
     <>
@@ -19,6 +21,7 @@ export function SpotUnlockPanel({ spot, token, unlock }: SpotUnlockPanelProps) {
         <Gem className="h-4 w-4" />
         <h2 className="text-sm font-semibold">解放状態</h2>
       </div>
+      {/* ログイン済みならunlock mutationを実行し、API成功後に親側で状態更新します。 */}
       {token ? (
         <GlowButton className="w-full" onClick={() => unlock.mutate()} disabled={unlock.isPending || spot.is_unlocked}>
           <Gem className="h-4 w-4" />
@@ -30,6 +33,7 @@ export function SpotUnlockPanel({ spot, token, unlock }: SpotUnlockPanelProps) {
           ログインして解放する
         </GlowLink>
       )}
+      {/* 未解放時だけ、どうすれば解放できるかの説明を表示します。 */}
       {!spot.is_unlocked ? <p className="mt-3 text-xs leading-5 text-violet-100/80">{spot.unlock_condition}</p> : null}
       {unlock.isSuccess ? <p className="mt-3 text-center text-sm text-violet-100">解放状態を更新しました。</p> : null}
     </>

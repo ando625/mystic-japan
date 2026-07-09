@@ -11,11 +11,13 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { getSpot } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth-store";
 
+// AI旅ガイド専用画面: スポット情報を読み込み、大きなチャットUIで相談できるようにします。
 export default function AiGuidePage() {
   const params = useParams<{ id: string }>();
   const spotId = Number(params.id);
   const { token } = useAuthStore();
 
+  // ガイドのプロンプトに使うスポット情報をLaravel APIから取得します。
   const { data: spot, isLoading } = useQuery({
     queryKey: ["spot", spotId, token],
     queryFn: () => getSpot(spotId, token),

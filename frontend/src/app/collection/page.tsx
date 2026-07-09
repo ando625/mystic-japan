@@ -9,8 +9,10 @@ import { GlassPanel } from "@/components/ui/GlassPanel";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { SpotCard } from "@/components/spot/SpotCard";
 
+// 図鑑コレクション画面: 解放率、解放数、神秘ポイントをまとめて確認する画面です。
 export default function CollectionPage() {
   const { token } = useAuthStore();
+  // スポット一覧と集計APIを両方取得し、API集計がない時はフロント側で最低限の集計を行います。
   const { data: spots = [] } = useQuery({
     queryKey: ["spots", token],
     queryFn: () => getSpots(token),
@@ -21,6 +23,7 @@ export default function CollectionPage() {
   });
 
   const summary = collection?.summary ?? {
+    // 未ログインやAPI未取得時でも画面が崩れないようにフォールバック値を作ります。
     unlocked_count: spots.filter((spot) => spot.is_unlocked).length,
     total_spots: spots.length,
     completion_rate: completionRate(spots.filter((spot) => spot.is_unlocked).length, spots.length),

@@ -6,6 +6,7 @@ export type SpotCategory =
   | "forest_mountain"
   | "other";
 
+// Laravelのspots APIから返る、スポット詳細の中心データです。
 export type Spot = {
   id: number;
   name: string;
@@ -25,12 +26,15 @@ export type Spot = {
   video_url?: string | null;
   rarity: number;
   mystic_points: number;
+  // trueなら新規ユーザー登録/ログイン時に最初から解放されます。
   is_initially_unlocked?: boolean;
+  // ログインユーザーにとって解放済みかどうかです。
   is_unlocked: boolean;
   unlocked_at?: string | null;
   visited_at?: string | null;
   unlock_condition?: string;
   stamp?: Stamp | null;
+  // 御朱印を獲得済みかどうかです。stamp.is_obtainedと同じ意味で使う場面があります。
   stamp_obtained?: boolean;
   obtained_at?: string | null;
   total_points?: number;
@@ -38,6 +42,7 @@ export type Spot = {
   user_progress?: UserProgress | null;
 };
 
+// 詳細画面のメインビューアで扱う、画像または動画の共通型です。
 export type SpotMedia = {
   id: number | string;
   type: "image" | "video";
@@ -47,6 +52,7 @@ export type SpotMedia = {
   objectPosition?: string | null;
 };
 
+// APIレスポンスに含める、ログインユーザーごとのスポット進行状態です。
 export type UserProgress = {
   is_unlocked: boolean;
   unlocked_at?: string | null;
@@ -56,6 +62,7 @@ export type UserProgress = {
   answered_quiz_ids?: number[];
 };
 
+// 御朱印帳・スポット詳細で使う御朱印データです。
 export type Stamp = {
   id: number;
   spot_id: number;
@@ -71,6 +78,7 @@ export type Stamp = {
 
 export type QuizOption = "A" | "B" | "C" | "D";
 
+// クイズ画面で表示する1問分のデータです。
 export type Quiz = {
   id: number;
   spot_id: number;
@@ -83,6 +91,7 @@ export type Quiz = {
   is_correct?: boolean | null;
 };
 
+// クイズ回答APIのレスポンスです。正誤だけでなく、報酬や御朱印獲得状態も返ります。
 export type QuizAnswerResult = {
   quiz_id: number;
   selected_option: QuizOption;
@@ -101,6 +110,7 @@ export type QuizAnswerResult = {
   user_progress?: UserProgress;
 };
 
+// 称号一覧APIの1件分です。progressは現在値と目標値です。
 export type Achievement = {
   id: number;
   title: string;
@@ -118,6 +128,7 @@ export type Achievement = {
   };
 };
 
+// 図鑑コレクション画面の集計データです。
 export type CollectionSummary = {
   unlocked_count: number;
   total_spots: number;
@@ -125,6 +136,7 @@ export type CollectionSummary = {
   mystic_points: number;
 };
 
+// ログインAPI/新規登録APIから返るユーザー情報です。
 export type User = {
   id: number;
   name: string;

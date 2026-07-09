@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { defaultImage } from "@/data/fallback-spots";
 import { cn } from "@/lib/utils";
 
+// スポット詳細の大きな画像に、ゆっくりしたズームや光の揺れを重ねるコンポーネントです。
 export function AnimatedSpotImage({
   src,
   alt,
@@ -21,15 +22,20 @@ export function AnimatedSpotImage({
   sizes?: string;
   objectPosition?: string;
 }) {
+  // OS設定で「視差効果を減らす」が有効なら、動きを止めてアクセシビリティに配慮します。
   const reduceMotion = useReducedMotion();
+
+  // 画像読み込みに失敗した場合はdefaultImageへ差し替えるため、表示中srcをstateで持ちます。
   const [currentSrc, setCurrentSrc] = useState(src || defaultImage);
 
   useEffect(() => {
+    // サムネイル切り替えなどでsrcが変わったら、メイン画像も更新します。
     setCurrentSrc(src || defaultImage);
   }, [src]);
 
   return (
     <div className={cn("relative h-full w-full overflow-hidden bg-slate-950", className)}>
+      {/* 画像自体を少し拡大・移動させ、動画のように見える演出を作ります。 */}
       <motion.div
         animate={
           reduceMotion
@@ -55,6 +61,7 @@ export function AnimatedSpotImage({
           unoptimized
         />
       </motion.div>
+      {/* 光の帯をゆっくり動かして、月明かりや水面の揺らぎのような雰囲気を足します。 */}
       <motion.div
         animate={reduceMotion ? {} : { opacity: [0.18, 0.38, 0.2], x: ["-9%", "8%", "-9%"] }}
         className="pointer-events-none absolute left-[-25%] top-[28%] h-32 w-[150%] rotate-[-10deg] bg-[linear-gradient(90deg,transparent,rgba(56,189,248,0.26),rgba(168,85,247,0.28),transparent)] blur-3xl"

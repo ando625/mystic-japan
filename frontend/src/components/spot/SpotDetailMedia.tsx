@@ -12,6 +12,7 @@ type SpotDetailMediaProps = {
   onSelect: (id: string | number) => void;
 };
 
+// 詳細画面のメインメディアビューア: 選択中の画像/動画を大きく表示します。
 export function SpotDetailMedia({ media, selectedMedia, onSelect }: SpotDetailMediaProps) {
   return (
     <div className="space-y-4">
@@ -54,6 +55,7 @@ function MediaThumbnailList({
   selectedId?: string | number;
   onSelect: (id: string | number) => void;
 }) {
+  // 画像が1枚だけならサムネイル一覧は不要です。
   if (media.length <= 1) {
     return null;
   }
@@ -71,6 +73,7 @@ function MediaThumbnailList({
           onClick={() => onSelect(item.id)}
           type="button"
         >
+          {/* サムネイルを押すと親コンポーネントのselectedMediaが切り替わります。 */}
           <Image
             alt=""
             className="object-cover"

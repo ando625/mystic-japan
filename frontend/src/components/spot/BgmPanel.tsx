@@ -8,8 +8,10 @@ import { GlowButton } from "@/components/ui/GlowButton";
 import { SpotImage } from "@/components/spot/SpotImage";
 import { cn } from "@/lib/utils";
 
+// BGMパネル: スポットに設定されたmusic_urlをアプリ共通のBGMストアで再生/停止します。
 export function BgmPanel({ spot, embedded = false }: { spot: Spot; embedded?: boolean }) {
   const { currentTrack, isPlaying, pause, playSpot } = useBgmStore();
+  // 今このスポットの曲が再生中かどうかで、ボタンの表示を切り替えます。
   const active = currentTrack?.id === `spot-${spot.id}` && isPlaying;
   const content = (
     <>

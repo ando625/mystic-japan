@@ -13,6 +13,7 @@ type SpotStampPanelProps = {
 export function SpotStampPanel({ spot, token }: SpotStampPanelProps) {
   return (
     <div className="grid gap-4 sm:grid-cols-[108px_1fr] lg:grid-cols-1">
+      {/* 御朱印未獲得の時はロック風に表示し、獲得済みなら印影を見せます。 */}
       {spot.stamp ? <StampSeal stamp={spot.stamp} locked={!spot.stamp.is_obtained} /> : null}
       <div className="min-w-0">
         <div className="flex items-center gap-2 text-cyan-100">
@@ -25,6 +26,7 @@ export function SpotStampPanel({ spot, token }: SpotStampPanelProps) {
             : "神話クイズで4問中3問以上正解すると、御朱印を獲得してこの絶景が解放されます。"}
         </p>
         <div className="mt-4 grid gap-2">
+          {/* 御朱印獲得は訪問ボタンではなく、神話クイズの達成で行います。 */}
           {token ? (
             <GlowLink href={`/spots/${spot.id}/quiz`}>
               <Sparkles className="h-4 w-4" />

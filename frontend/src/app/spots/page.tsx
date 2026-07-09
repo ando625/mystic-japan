@@ -11,10 +11,12 @@ import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { SpotCard } from "@/components/spot/SpotCard";
 
+// 図鑑一覧画面: スポットをカテゴリで絞り込み、解放済み/未解放の状態をカードに表示します。
 export default function SpotsPage() {
   const [category, setCategory] = useState<SpotCategory | "all">("all");
   const { token } = useAuthStore();
   const syncFromSpots = useProgressStore((state) => state.syncFromSpots);
+  // 一覧APIの結果をZustandにも同期し、他画面の進行表示とずれないようにします。
   const { data: spots = [] } = useQuery({
     queryKey: ["spots", token],
     queryFn: () => getSpots(token),
@@ -25,6 +27,7 @@ export default function SpotsPage() {
   }, [spots, syncFromSpots]);
 
   const filtered = useMemo(
+    // カテゴリボタンで表示するスポットだけを切り替えます。
     () => (category === "all" ? spots : spots.filter((spot) => spot.category === category)),
     [category, spots],
   );

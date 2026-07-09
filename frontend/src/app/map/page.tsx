@@ -14,8 +14,10 @@ const MapView = dynamic(() => import("@/components/map/MysticMap").then((mod) =>
   loading: () => <div className="grid min-h-[620px] place-items-center text-slate-300">地図を展開中...</div>,
 });
 
+// 日本地図画面: APIからスポットを取得し、地図ピンと右側のスポットカードに反映します。
 export default function MapPage() {
   const { token } = useAuthStore();
+  // ログイン中はユーザーごとの解放状態も含めて取得します。
   const { data: spots = [] } = useQuery({
     queryKey: ["spots", token],
     queryFn: () => getSpots(token),

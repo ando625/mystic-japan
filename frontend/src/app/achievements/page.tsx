@@ -14,8 +14,10 @@ const iconMap = {
   Sparkles,
 };
 
+// 称号画面: 解放数や御朱印数などの進行に応じた達成状況を表示します。
 export default function AchievementsPage() {
   const { token } = useAuthStore();
+  // Laravel側で現在の進行度を計算した称号一覧を取得します。
   const { data: achievements = [] } = useQuery({
     queryKey: ["achievements", token],
     queryFn: () => getAchievements(token),

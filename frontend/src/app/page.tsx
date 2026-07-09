@@ -7,6 +7,7 @@ import Link from "next/link";
 
 const homeHeroImage = "/images/home/home.png";
 
+// ホーム画面: home.pngを全面に見せ、旅の入口として地図と図鑑へ誘導します。
 export default function Home() {
   const reduceMotion = useReducedMotion();
 
@@ -15,6 +16,7 @@ export default function Home() {
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_center,#160b2e_0%,#070512_45%,#020208_100%)]" />
 
       <div className="absolute inset-y-0 left-[10px] right-[10px] z-0 overflow-hidden">
+        {/* 背景画像だけが静止して見えないように、低負荷なズームと揺れを入れます。 */}
         <motion.div
           animate={reduceMotion ? {} : { scale: [1.02, 1.075], x: [0, -8, 6, 0], y: [0, -6, 4, 0] }}
           className="absolute inset-0"

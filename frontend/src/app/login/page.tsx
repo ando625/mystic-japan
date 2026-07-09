@@ -11,6 +11,7 @@ import { GlassPanel } from "@/components/ui/GlassPanel";
 import { GlowButton } from "@/components/ui/GlowButton";
 import { PageHeader } from "@/components/ui/PageHeader";
 
+// 認証画面: ログインと新規登録を切り替え、取得したSanctumトークンをZustandに保存します。
 export default function LoginPage() {
   const router = useRouter();
   const { user, setSession, clearSession } = useAuthStore();
@@ -22,6 +23,7 @@ export default function LoginPage() {
   const mutation = useMutation({
     mutationFn: () => (mode === "login" ? login(email, password) : register(name, email, password)),
     onSuccess: (session) => {
+      // ログイン成功後は全画面でAPI認証に使えるよう、トークンとユーザー情報を保存します。
       setSession(session.token, session.user);
       router.push("/collection");
     },
@@ -60,6 +62,7 @@ export default function LoginPage() {
                   )}
                   key={item}
                   onClick={() => {
+                    // デモログインと新規登録の入力値が混ざらないように、モード変更時に初期値を調整します。
                     setMode(item);
                     mutation.reset();
                     if (item === "register" && email === "traveler@example.com") {

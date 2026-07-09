@@ -17,12 +17,15 @@ import { RarityStars } from "@/components/ui/RarityStars";
 import type { SpotMedia } from "@/types/domain";
 import { cn } from "@/lib/utils";
 
+// スポット詳細画面: 絶景メディア、AIガイド、BGM、御朱印、物語タブをまとめて表示します。
 export default function SpotDetailPage() {
   const params = useParams<{ id: string }>();
   const spotId = Number(params.id);
   const { token } = useAuthStore();
+  // サムネイルクリック時に選択中メディアを切り替えるための状態です。
   const [selectedMediaId, setSelectedMediaId] = useState<string | number | null>(null);
 
+  // ログイン中は、このスポットの解放状態・御朱印状態も一緒に取得します。
   const { data: spot, isLoading } = useQuery({
     queryKey: ["spot", spotId, token],
     queryFn: () => getSpot(spotId, token),
@@ -30,6 +33,7 @@ export default function SpotDetailPage() {
   });
 
   const media = useMemo<SpotMedia[]>(() => {
+    // APIがmedia配列を返す場合はそれを優先し、なければ画像URLと動画URLから表示用データを作ります。
     if (!spot) {
       return [];
     }
@@ -62,6 +66,7 @@ export default function SpotDetailPage() {
       : imageMedia;
   }, [spot]);
 
+  // メインビューアは常に選択中の画像/動画を参照します。
   const selectedMedia = media.find((item) => item.id === selectedMediaId) ?? media[0] ?? null;
 
   if (isLoading || !spot) {
@@ -133,6 +138,7 @@ export default function SpotDetailPage() {
   );
 }
 
+// 詳細画面内の小さな情報ブロックを統一するための共通枠です。
 function FeaturePanel({ children, className }: { children: ReactNode; className?: string }) {
   return (
     <div className={cn("h-fit rounded-[8px] border border-white/10 bg-white/5 p-4 text-sm backdrop-blur-sm", className)}>

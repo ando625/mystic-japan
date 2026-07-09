@@ -151,6 +151,9 @@ Response:
 
 スポットを解放します。
 
+現在のUIでは手動解放ボタンを表示せず、通常は神話クイズで御朱印を獲得した時に解放します。
+このAPIは既存実装との互換や管理用のために残しています。
+
 認証: 必須
 
 Response:
@@ -169,6 +172,137 @@ Response:
     }
   ],
   "already_unlocked": false
+}
+```
+
+### POST `/spots/{spot}/visit`
+
+スポットの訪問日時だけを記録します。
+
+現在の仕様では、訪問済みにしても御朱印は獲得しません。
+御朱印は神話クイズで4問中3問以上正解した場合のみ獲得します。
+
+認証: 必須
+
+Response:
+
+```json
+{
+  "spot_id": 1,
+  "visited_at": "2026-07-02T12:00:00+09:00",
+  "stamp_obtained": false,
+  "stamp": null,
+  "user_progress": {
+    "is_unlocked": false,
+    "unlocked_at": null,
+    "visited_at": "2026-07-02T12:00:00+09:00",
+    "stamp_obtained": false,
+    "total_points": 0,
+    "answered_quiz_ids": []
+  }
+}
+```
+
+## 神話クイズ
+
+### GET `/spots/{spot}/quizzes`
+
+スポットに紐づく4択クイズを返します。
+
+認証: 任意
+
+認証済みの場合は、そのユーザーの回答済み状態も含めます。
+
+Response:
+
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "spot_id": 1,
+      "question": "青い池の水に含まれている主な成分は何でしょう？",
+      "options": {
+        "A": "硫黄",
+        "B": "アルミニウム",
+        "C": "銅",
+        "D": "鉄"
+      },
+      "reward_points": 30,
+      "answered_at": null,
+      "selected_option": null,
+      "is_correct": null
+    }
+  ]
+}
+```
+
+### POST `/quizzes/{quiz}/answer`
+
+クイズへ回答します。
+
+認証: 必須
+
+正解するとクイズごとのポイントを獲得します。
+同じクイズに再回答してもポイントは重複付与しません。
+
+同じスポットの4問中3問以上正解すると、御朱印を獲得し、スポットも解放されます。
+
+Request:
+
+```json
+{
+  "selected_option": "B"
+}
+```
+
+Response:
+
+```json
+{
+  "quiz_id": 1,
+  "selected_option": "B",
+  "correct_option": "B",
+  "is_correct": true,
+  "already_answered": false,
+  "reward_points": 30,
+  "explanation": "白金温泉の湧水に含まれるアルミニウムが...",
+  "stamp_obtained": false,
+  "stamp_newly_obtained": false,
+  "stamp": null,
+  "spot_unlocked": false,
+  "correct_answers_count": 1,
+  "required_correct_answers": 3,
+  "visited": false,
+  "user_progress": {
+    "is_unlocked": false,
+    "unlocked_at": null,
+    "visited_at": null,
+    "stamp_obtained": false,
+    "total_points": 30,
+    "answered_quiz_ids": [1]
+  }
+}
+```
+
+### POST `/spots/{spot}/quizzes/retry`
+
+神話クイズを再挑戦するため、そのスポットの回答履歴をリセットします。
+
+認証: 必須
+
+御朱印未獲得で、4問回答後に3問正解できなかった場合に使います。
+御朱印獲得済み、またはすでに3問以上正解済みの場合はリセットしません。
+
+Response:
+
+```json
+{
+  "can_retry": true,
+  "deleted_answers": 4,
+  "correct_answers_count": 0,
+  "required_correct_answers": 3,
+  "answered_quiz_ids": []
 }
 ```
 

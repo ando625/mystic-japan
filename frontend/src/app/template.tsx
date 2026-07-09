@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import type { ReactNode } from "react";
 
+// ページ遷移時に、画面全体をふわっと表示する共通アニメーションです。
 export default function Template({ children }: { children: ReactNode }) {
   return (
     <motion.div

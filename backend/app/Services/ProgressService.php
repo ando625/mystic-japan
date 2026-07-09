@@ -13,12 +13,14 @@ use App\Models\UserStamp;
 
 class ProgressService
 {
+    // 御朱印を獲得するために必要な、同一スポット内の正解数です。
     private const STAMP_REQUIRED_CORRECT_ANSWERS = 3;
 
     public function __construct(private readonly AchievementService $achievements) {}
 
     public function ensureInitialSpots(User $user): void
     {
+        // 初期解放スポットは、ログイン後すぐに探索できるようユーザー進行へ反映します。
         Spot::query()
             ->where('is_initially_unlocked', true)
             ->each(fn (Spot $spot) => $this->unlockSpot($user, $spot, false));
@@ -32,6 +34,7 @@ class ProgressService
      */
     public function unlockSpot(User $user, Spot $spot, bool $grantPoints = true): array
     {
+        // user_spots は現在の解放状態、collections は図鑑表示用として両方を同期します。
         $progress = UserSpot::query()->firstOrNew([
             'user_id' => $user->id,
             'spot_id' => $spot->id,
@@ -40,6 +43,7 @@ class ProgressService
         $alreadyUnlocked = (bool) $progress->is_unlocked;
 
         if (! $alreadyUnlocked) {
+            // 初回解放の時だけ解放日時を保存し、再実行時の重複ポイントを防ぎます。
             $progress->fill([
                 'is_unlocked' => true,
                 'unlocked_at' => now(),
@@ -71,6 +75,7 @@ class ProgressService
      */
     public function visitSpot(User $user, Spot $spot): array
     {
+        // 訪問記録はメモ用途だけにし、御朱印や解放報酬はクイズ達成時だけ付与します。
         $progress = UserSpot::query()->firstOrCreate([
             'user_id' => $user->id,
             'spot_id' => $spot->id,
@@ -93,6 +98,7 @@ class ProgressService
      */
     public function obtainStamp(User $user, Stamp $stamp): array
     {
+        // firstOrCreateで、同じ御朱印を何度も獲得できないようにします。
         $userStamp = UserStamp::query()->firstOrCreate(
             ['user_id' => $user->id, 'stamp_id' => $stamp->id],
             ['obtained_at' => now()],
@@ -109,6 +115,7 @@ class ProgressService
      */
     public function answerQuiz(User $user, Quiz $quiz, string $selectedOption): array
     {
+        // すでに回答済みのクイズは再採点せず、ポイントの二重付与を避けます。
         $existing = QuizAnswer::query()
             ->where('user_id', $user->id)
             ->where('quiz_id', $quiz->id)
@@ -130,6 +137,7 @@ class ProgressService
             ];
         }
 
+        // 新規回答だけを保存し、この結果をもとに正解数と御朱印条件を判定します。
         $isCorrect = strtoupper($selectedOption) === $quiz->correct_option;
         $answer = QuizAnswer::query()->create([
             'user_id' => $user->id,
@@ -159,6 +167,7 @@ class ProgressService
      */
     private function grantSpotQuizCompletionReward(User $user, Quiz $quiz): array
     {
+        // 同一スポット内の正解数が3問に到達した時だけ御朱印と解放を付与します。
         $correctAnswersCount = $this->correctAnswersCountForSpot($user, $quiz->spot);
         $stampResult = null;
         $spotUnlock = ['already_unlocked' => true];
@@ -179,6 +188,7 @@ class ProgressService
 
     private function correctAnswersCountForSpot(User $user, Spot $spot): int
     {
+        // そのスポットに紐づくクイズだけを対象に、正解済み回答を数えます。
         return $user->quizAnswers()
             ->where('is_correct', true)
             ->whereHas('quiz', fn ($query) => $query->where('spot_id', $spot->id))
@@ -190,6 +200,7 @@ class ProgressService
      */
     public function retrySpotQuizzes(User $user, Spot $spot): array
     {
+        // 御朱印獲得済み、または条件達成済みの場合は、回答履歴を消さないようにします。
         $correctAnswersCount = $this->correctAnswersCountForSpot($user, $spot);
         $hasStamp = (bool) ($spot->stamp && $user->stamps()->whereKey($spot->stamp->id)->exists());
 
@@ -202,6 +213,7 @@ class ProgressService
             ];
         }
 
+        // 3問未満で失敗した場合のみ、そのスポットの回答履歴を消して再挑戦できるようにします。
         $quizIds = $spot->quizzes()->pluck('id');
         $deletedAnswers = QuizAnswer::query()
             ->where('user_id', $user->id)
@@ -218,6 +230,7 @@ class ProgressService
 
     private function markVisited(UserSpot $progress): void
     {
+        // 御朱印獲得によるクリア扱いとして、初回だけ訪問日時を補完します。
         if ($progress->visited_at) {
             return;
         }
@@ -228,6 +241,7 @@ class ProgressService
 
     public function totalPoints(User $user): int
     {
+        // 合計ポイントは保存せず、解放スポットポイントとクイズ正解ポイントから都度集計します。
         $spotPoints = (int) $user->collections()
             ->join('spots', 'collections.spot_id', '=', 'spots.id')
             ->sum('spots.mystic_points');

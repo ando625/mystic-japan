@@ -8,6 +8,7 @@ import type { Spot } from "@/types/domain";
 import { GlassPanel } from "@/components/ui/GlassPanel";
 import { SpotImage } from "@/components/spot/SpotImage";
 
+// スポットカード: 一覧・地図サイドバー・図鑑で使う、画像中心の共通カードです。
 export function SpotCard({ spot, compact = false }: { spot: Spot; compact?: boolean }) {
   return (
     <Link href={`/spots/${spot.id}`} className="group block">
@@ -21,6 +22,7 @@ export function SpotCard({ spot, compact = false }: { spot: Spot; compact?: bool
           <div className={compact ? "relative aspect-[4/3]" : "relative aspect-[5/4]"}>
             <SpotImage alt={spot.name} src={spot.image_url} />
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/8 to-transparent" />
+            {/* 未解放スポットは少し暗くして、まだ記憶が閉じていることを表現します。 */}
             {!spot.is_unlocked ? (
               <div className="absolute inset-0 bg-slate-950/28" />
             ) : null}

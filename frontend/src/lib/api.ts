@@ -4,10 +4,12 @@ import type { JsonApiResponse, RetrySpotQuizzesResponse, UnlockSpotResponse, Vis
 import type { Achievement, CollectionSummary, Quiz, QuizAnswerResult, QuizOption, Spot, Stamp, User } from "@/types/domain";
 
 function resolveApiBaseUrl() {
+  // ローカル・Render・明示指定のどれでも同じAPI関数を使えるよう、実行環境から接続先を決めます。
   const configuredApiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
   const isRenderBrowser = typeof window !== "undefined" && window.location.hostname.endsWith(".onrender.com");
 
   if (configuredApiBaseUrl && !(isRenderBrowser && configuredApiBaseUrl.includes("localhost"))) {
+    // 環境変数でAPI URLが指定されていれば、それを最優先にします。
     return configuredApiBaseUrl;
   }
 
@@ -18,6 +20,7 @@ function resolveApiBaseUrl() {
   }
 
   if (isRenderBrowser) {
+    // Renderでは web/api のサービス名規則からAPI URLを推定します。
     return `${window.location.origin.replace("-web.onrender.com", "-api.onrender.com")}/api`;
   }
 
@@ -27,6 +30,7 @@ function resolveApiBaseUrl() {
 const apiBaseUrl = resolveApiBaseUrl();
 
 async function request<T>(path: string, token?: string | null, init?: RequestInit): Promise<T> {
+  // 認証が必要なAPIにはBearerトークンを付与し、全APIのエラー処理をここに集約します。
   const response = await fetch(`${apiBaseUrl}${path}`, {
     ...init,
     headers: {
@@ -49,6 +53,7 @@ export async function getSpots(token?: string | null): Promise<Spot[]> {
     const response = await request<JsonApiResponse<Spot[]>>("/spots", token);
     return response.data;
   } catch {
+    // APIが起きていない開発中でも画面確認できるよう、最低限のフォールバックを返します。
     return fallbackSpots;
   }
 }
@@ -99,6 +104,7 @@ export async function getSpotQuizzes(spotId: number, token?: string | null): Pro
 }
 
 export async function answerQuiz(quizId: number, selectedOption: QuizOption, token: string): Promise<QuizAnswerResult> {
+  // クイズ回答はサーバー側で採点し、ポイント・御朱印・解放状態をまとめて返します。
   return request<QuizAnswerResult>(`/quizzes/${quizId}/answer`, token, {
     method: "POST",
     body: JSON.stringify({ selected_option: selectedOption }),
@@ -106,6 +112,7 @@ export async function answerQuiz(quizId: number, selectedOption: QuizOption, tok
 }
 
 export async function retrySpotQuizzes(spotId: number, token: string): Promise<RetrySpotQuizzesResponse> {
+  // 御朱印未獲得で条件未達の時だけ、サーバー側で回答履歴をリセットします。
   return request<RetrySpotQuizzesResponse>(`/spots/${spotId}/quizzes/retry`, token, {
     method: "POST",
   });
@@ -177,6 +184,7 @@ export async function register(name: string, email: string, password: string) {
 }
 
 export async function askAiGuide(spotId: number, message: string, token: string) {
+  // AIへの直接通信は行わず、スポット文脈を付けるためLaravel APIを経由します。
   return request<{ answer: string; spot_id: number; model: string }>("/ai/guide", token, {
     method: "POST",
     body: JSON.stringify({

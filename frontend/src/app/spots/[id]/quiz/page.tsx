@@ -31,6 +31,7 @@ export default function SpotQuizPage() {
     queryFn: () => getSpotQuizzes(spotId, token),
   });
   const requiredCorrectAnswers = 3;
+  // ローカルで回答した結果とAPIから取得した回答済み情報を合わせて、現在の進行を表示します。
   const answeredCount = quizzes.filter((quiz) => Boolean(results[quiz.id]) || Boolean(quiz.answered_at)).length;
   const correctAnswersCount = quizzes.filter((quiz) => {
     const result = results[quiz.id];
@@ -38,6 +39,7 @@ export default function SpotQuizPage() {
     return result?.is_correct ?? quiz.is_correct;
   }).length;
   const stampObtained = Boolean(spot?.stamp?.is_obtained || spot?.stamp_obtained || spot?.user_progress?.stamp_obtained);
+  // 全問回答済みで3問正解に届かず、まだ御朱印がない時だけ再挑戦ボタンを出します。
   const canRetry = quizzes.length > 0 && answeredCount === quizzes.length && correctAnswersCount < requiredCorrectAnswers && !stampObtained;
 
   const answer = useMutation({
@@ -49,6 +51,7 @@ export default function SpotQuizPage() {
       return answerQuiz(quizId, selectedOption, token);
     },
     onSuccess: (result) => {
+      // 回答直後に画面へ反映するため、API再取得を待たずにローカル状態とQueryキャッシュを更新します。
       setResults((current) => ({ ...current, [result.quiz_id]: result }));
       applyQuizResult(result);
       queryClient.setQueryData<Spot>(["spot", spotId, token], (current) => {
@@ -59,6 +62,7 @@ export default function SpotQuizPage() {
         const stampObtained = result.user_progress?.stamp_obtained ?? result.stamp_obtained ?? current.stamp_obtained ?? false;
         const isUnlocked = result.user_progress?.is_unlocked ?? current.is_unlocked;
 
+        // 御朱印獲得やスポット解放が起きた場合、詳細画面へ戻っても状態が揃うようにします。
         return {
           ...current,
           is_unlocked: isUnlocked,
@@ -82,6 +86,7 @@ export default function SpotQuizPage() {
           obtained_at: result.stamp?.obtained_at ?? current.obtained_at,
         };
       });
+      // 回答したクイズだけを回答済みにして、同じ問題を連打できないようにします。
       queryClient.setQueryData<Quiz[]>(["spot-quizzes", spotId, token], (current = []) =>
         current.map((quiz) =>
           quiz.id === result.quiz_id
@@ -110,6 +115,7 @@ export default function SpotQuizPage() {
       return retrySpotQuizzes(spotId, token);
     },
     onSuccess: () => {
+      // 再挑戦時は回答履歴を空にして、4問すべてをもう一度押せる状態に戻します。
       setResults({});
       queryClient.setQueryData<Quiz[]>(["spot-quizzes", spotId, token], (current = []) =>
         current.map((quiz) => ({

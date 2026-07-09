@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   description: "神々の記憶を巡る和風ファンタジーWebアプリ",
 };
 
+// 全ページ共通の土台です。背景、BGMプレイヤー、下部ナビはここで一度だけ配置します。
 export default function RootLayout({
   children,
 }: Readonly<{

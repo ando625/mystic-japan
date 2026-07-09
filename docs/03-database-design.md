@@ -37,6 +37,8 @@ Laravel標準のユーザーテーブルを利用します。
 | video_url | varchar(2048) | yes | 動画URL |
 | rarity | smallint | no | レア度 1-5 |
 | mystic_points | integer | no | 解放時の神秘ポイント |
+| is_initially_unlocked | boolean | no | 初期解放対象か |
+| images | json | yes | 複数画像パス |
 | created_at | timestamp | yes | 作成日時 |
 | updated_at | timestamp | yes | 更新日時 |
 
@@ -53,7 +55,7 @@ Laravel標準のユーザーテーブルを利用します。
 
 ## collections
 
-ユーザーが解放したスポットを管理します。
+ユーザーが解放したスポットを図鑑コレクションとして管理します。
 
 | カラム | 型 | Null | 説明 |
 | --- | --- | --- | --- |
@@ -71,6 +73,90 @@ Laravel標準のユーザーテーブルを利用します。
 | unique | user_id, spot_id |
 | index | user_id |
 | index | spot_id |
+
+## user_spots
+
+ユーザーごとのスポット進行状態を管理します。
+
+御朱印獲得時に `is_unlocked` を `true` にし、`collections` にも反映します。
+`visited_at` は訪問メモ用であり、御朱印獲得条件には使いません。
+
+| カラム | 型 | Null | 説明 |
+| --- | --- | --- | --- |
+| id | bigserial | no | 主キー |
+| user_id | bigint | no | users.id |
+| spot_id | bigint | no | spots.id |
+| is_unlocked | boolean | no | 解放済みか |
+| unlocked_at | timestamp | yes | 解放日時 |
+| visited_at | timestamp | yes | 訪問記録日時 |
+| created_at | timestamp | yes | 作成日時 |
+| updated_at | timestamp | yes | 更新日時 |
+
+## stamps
+
+スポットごとの御朱印マスターデータです。
+
+| カラム | 型 | Null | 説明 |
+| --- | --- | --- | --- |
+| id | bigserial | no | 主キー |
+| spot_id | bigint | no | spots.id |
+| name | varchar(255) | no | 御朱印名 |
+| description | text | no | 説明 |
+| image_path | varchar(255) | yes | 御朱印画像パス |
+| rarity | smallint | no | レア度 |
+| created_at | timestamp | yes | 作成日時 |
+| updated_at | timestamp | yes | 更新日時 |
+
+## user_stamps
+
+ユーザーが獲得した御朱印を管理します。
+
+御朱印は神話クイズで4問中3問以上正解した時に獲得します。
+
+| カラム | 型 | Null | 説明 |
+| --- | --- | --- | --- |
+| id | bigserial | no | 主キー |
+| user_id | bigint | no | users.id |
+| stamp_id | bigint | no | stamps.id |
+| obtained_at | timestamp | no | 獲得日時 |
+| created_at | timestamp | yes | 作成日時 |
+| updated_at | timestamp | yes | 更新日時 |
+
+## quizzes
+
+スポットごとの4択クイズです。
+
+| カラム | 型 | Null | 説明 |
+| --- | --- | --- | --- |
+| id | bigserial | no | 主キー |
+| spot_id | bigint | no | spots.id |
+| question | text | no | 問題文 |
+| option_a | varchar(255) | no | 選択肢A |
+| option_b | varchar(255) | no | 選択肢B |
+| option_c | varchar(255) | no | 選択肢C |
+| option_d | varchar(255) | no | 選択肢D |
+| correct_option | char(1) | no | 正解 A-D |
+| explanation | text | no | 解説 |
+| reward_points | integer | no | 正解時ポイント |
+| created_at | timestamp | yes | 作成日時 |
+| updated_at | timestamp | yes | 更新日時 |
+
+## quiz_answers
+
+ユーザーごとのクイズ回答履歴です。
+
+御朱印未獲得で3問正解できなかった場合は、リトライ時に対象スポットの回答履歴を削除します。
+
+| カラム | 型 | Null | 説明 |
+| --- | --- | --- | --- |
+| id | bigserial | no | 主キー |
+| user_id | bigint | no | users.id |
+| quiz_id | bigint | no | quizzes.id |
+| selected_option | char(1) | no | 選択した回答 |
+| is_correct | boolean | no | 正解か |
+| answered_at | timestamp | no | 回答日時 |
+| created_at | timestamp | yes | 作成日時 |
+| updated_at | timestamp | yes | 更新日時 |
 
 ## achievements
 

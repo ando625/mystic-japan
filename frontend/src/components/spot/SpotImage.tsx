@@ -5,6 +5,7 @@ import { useState } from "react";
 import { defaultImage } from "@/data/fallback-spots";
 import { cn } from "@/lib/utils";
 
+// 一覧カードやBGMパネルで使う、通常のスポット画像コンポーネントです。
 export function SpotImage({
   src,
   alt,
@@ -14,6 +15,7 @@ export function SpotImage({
   alt: string;
   className?: string;
 }) {
+  // 画像パスが無い、または読み込みに失敗した場合は共通のデフォルト画像を表示します。
   const [currentSrc, setCurrentSrc] = useState(src || defaultImage);
 
   return (

@@ -12,9 +12,11 @@ import { GlassPanel } from "@/components/ui/GlassPanel";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { RarityStars } from "@/components/ui/RarityStars";
 
+// 御朱印帳画面: DBのuser_stampsをもとに、獲得済み/未獲得の御朱印を一覧表示します。
 export default function StampsPage() {
   const { token } = useAuthStore();
   const syncFromStamps = useProgressStore((state) => state.syncFromStamps);
+  // ログイン中はユーザーごとの獲得状態、未ログイン時は未獲得状態の一覧を取得します。
   const { data: stamps = [] } = useQuery({
     queryKey: ["stamps", token],
     queryFn: () => getStamps(token),
