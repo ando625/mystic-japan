@@ -4,6 +4,11 @@
 
 > Next.js × Laravel × PostgreSQL × Gemini API × ChatGPT企画・画像 × SUNO音楽 × Codex開発
 
+
+https://mystic-japan-web.onrender.com/
+
+
+
 ---
 
 ## アプリの概要
