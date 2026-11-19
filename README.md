@@ -179,7 +179,7 @@ Renderで動かせるように、`render.yaml` とDockerfileを用意してい�
 
 ### バックエンド
 
-- PHP 8.4
+- PHP 8.5
 - Laravel 13
 - Laravel Sanctum
 - REST API
@@ -440,6 +440,17 @@ docker compose up -d --build
 
 - 期限の出典: [PHP Supported Versions](https://www.php.net/supported-versions.php) / [Laravel Release Notes](https://laravel.com/docs/13.x/releases)
 - `composer audit` で検出された脆弱性は、更新前の32件から0件になりました
+
+### PHP 8.5 への更新（2026年11月）
+
+PHP 8.4 のバグ修正が 2026-12-31 で終わるため、PHP 8.5 に更新しました（Docker・composer.json・CI）。
+
+| 対象 | 変更前 | 変更後 | バグ修正の期限 | セキュリティ修正の期限 |
+|---|---|---|---|---|
+| PHP | 8.4 | 8.5 | 2027-12-31 | 2029-12-31 |
+
+- 期限の出典: [PHP Supported Versions](https://www.php.net/supported-versions.php)
+- Laravel 13 は PHP 8.3〜8.5 に対応しています（[Laravel Release Notes](https://laravel.com/docs/13.x/releases)）
 
 ### 脆弱性チェックの方法
 
