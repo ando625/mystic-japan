@@ -38,6 +38,10 @@ return [
     'gemini' => [
         'api_key' => env('GEMINI_API_KEY'),
         'model' => env('GEMINI_MODEL', 'gemini-2.5-flash'),
+        // AI旅ガイドの回数制限です。誰でも登録できるため、無料枠を使い切られないように上限を決めます。
+        'guide_per_minute' => (int) env('AI_GUIDE_PER_MINUTE', 5),
+        'guide_per_user_per_day' => (int) env('AI_GUIDE_PER_USER_PER_DAY', 30),
+        'guide_total_per_day' => (int) env('AI_GUIDE_TOTAL_PER_DAY', 200),
     ],
 
 ];
