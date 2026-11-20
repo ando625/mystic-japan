@@ -1,19 +1,22 @@
 # Renderデプロイ手順
 
-Phase7では、Render Blueprintで以下の3リソースを作成します。
+Render Blueprintで以下の2サービスを作成し、データベースは Neon の PostgreSQL を使います。
 
-| Resource | Render type | Role | Plan |
+| Resource | 置き場所 | Role | Plan |
 | --- | --- | --- | --- |
-| `mystic-japan-web` | Web Service / Docker | Next.js frontend | free |
-| `mystic-japan-api` | Web Service / Docker | Laravel API | free |
-| `mystic-japan-db` | Render Postgres | PostgreSQL | free |
+| `mystic-japan-web` | Render Web Service / Docker | Next.js frontend | free |
+| `mystic-japan-api` | Render Web Service / Docker | Laravel API | free |
+| `mystic-japan` | Neon（AWS Asia Pacific 1 (Singapore)） | PostgreSQL 16 | free |
+
+最初は Render Postgres を使っていましたが、Render の無料のデータベースは作成から30日で消えるため、2026年11月に期限の無い Neon の無料プランへ移しました。
 
 ## 事前準備
 
 1. GitHubにこのリポジトリをpushします。
 2. Renderのアカウントを作成します。
-3. Gemini APIを使う場合は `GEMINI_API_KEY` を用意します。
-4. LaravelのAPP_KEYをローカルで生成します。
+3. Neon でプロジェクトを作り、接続文字列を用意します（下の「Neonでデータベースを作成」）。
+4. Gemini APIを使う場合は `GEMINI_API_KEY` を用意します。
+5. LaravelのAPP_KEYをローカルで生成します。
 
 ```bash
 cd backend
@@ -21,6 +24,22 @@ php artisan key:generate --show
 ```
 
 表示された `base64:...` 形式の値を、Render作成時に `APP_KEY` へ入力します。
+
+## Neonでデータベースを作成
+
+1. https://neon.com でアカウントを作り、新しいプロジェクトを作ります。
+
+| 欄 | 値 |
+| --- | --- |
+| Project name | `mystic-japan` |
+| Region | AWS Asia Pacific 1 (Singapore)（Renderのサービスと同じ地域） |
+| Postgres version | 16 |
+| Database name | `mystic_japan` |
+
+2. プロジェクトの `Connect` から、接続文字列（`postgresql://...`）をコピーします。Connection pooling はオフ（直接接続）にします。起動時の `migrate` を確実に通すためです。
+3. 接続文字列にはパスワードが入っているため、GitHub やチャットに貼らないでください。
+
+Neon の無料プランは期限が無く、使われないときは5分で計算部分が止まり、次の接続で自動で戻ります（https://neon.com/pricing ）。
 
 ## Blueprintで作成
 
@@ -33,6 +52,7 @@ php artisan key:generate --show
 | Key | Required | Value |
 | --- | --- | --- |
 | `APP_KEY` | Yes | `php artisan key:generate --show` の結果 |
+| `DB_URL` | Yes | Neon の接続文字列 |
 | `GEMINI_API_KEY` | No | AI旅ガイドを使う場合のみ入力 |
 | `NEXT_PUBLIC_CARTO_API_KEY` | No（地図に必要） | `mystic-japan-web` に入力。CARTO の地図タイルのキー（下の「地図タイルのAPIキー」） |
 
@@ -54,8 +74,8 @@ php artisan key:generate --show
 
 - `backend/Dockerfile` からLaravel APIをDockerデプロイ
 - `frontend/Dockerfile` からNext.jsをDockerデプロイ
-- Render Postgresを作成
-- LaravelへPostgres接続文字列を `DB_URL` として渡す
+- Laravelへ、画面で入力した Neon の接続文字列を `DB_URL` として渡す（`sync: false`）
+- Neon は暗号化した接続が必須のため、`DB_SSLMODE` を `require` にする
 - Next.jsへLaravel APIのURLを `NEXT_PUBLIC_API_ORIGIN_URL` として渡す
 - Laravelの `FRONTEND_URL` / `CORS_ALLOWED_ORIGINS` / `SANCTUM_STATEFUL_DOMAINS` をRenderサービス参照で設定
 
@@ -136,15 +156,15 @@ Render無料枠には次の制約があります。
 - Free Web Serviceは15分程度アクセスがないとスリープします。
 - スリープ復帰時は初回表示に時間がかかります。
 - Free Web Serviceのローカルファイルは永続化されません。
-- Free Postgresは1ワークスペース1個までです。
-- Free Postgresは作成から30日で期限切れになります。
 - 無料Webサービス2つを長時間動かすと、月間無料インスタンス時間を消費します。
+- Render の Free Postgres は作成から30日で期限切れになるため、このアプリでは使っていません（データベースは Neon）。
 
-実案件で継続運用する場合は、少なくともPostgresを有料プランへ上げる前提で考えてください。
+Neon の無料プランにも、1プロジェクトあたり 1GB の容量と、月100時間の計算時間の上限があります。実案件で継続運用する場合は、有料プランを前提に考えてください。
 
 ## 公式ドキュメント
 
 - Render Blueprint: https://render.com/docs/blueprint-spec
 - Docker on Render: https://render.com/docs/docker
 - Render Free Instances: https://render.com/docs/free
+- Neon Pricing: https://neon.com/pricing
 - Render Default Environment Variables: https://render.com/docs/environment-variables
