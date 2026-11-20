@@ -34,8 +34,19 @@ php artisan key:generate --show
 | --- | --- | --- |
 | `APP_KEY` | Yes | `php artisan key:generate --show` の結果 |
 | `GEMINI_API_KEY` | No | AI旅ガイドを使う場合のみ入力 |
+| `NEXT_PUBLIC_CARTO_API_KEY` | No（地図に必要） | `mystic-japan-web` に入力。CARTO の地図タイルのキー（下の「地図タイルのAPIキー」） |
 
 `GEMINI_API_KEY` が空でもデプロイ自体はできます。その場合、AI旅ガイドAPIは503を返します。
+
+## 地図タイルのAPIキー
+
+地図の画像は CARTO の `dark_all` を使っています。CARTO の地図タイルは API キーが必要で、無いと地図の代わりに「API KEY REQUIRED」の画像が出ます。
+
+1. https://carto.com/basemaps/apikey で無料のキーを申し込みます（非商用なら月500万リクエストまで無料。メールで届きます）。
+2. CARTO の管理画面で、キーを使えるドメインを `mystic-japan-web.onrender.com` と `localhost` に制限します。キーはブラウザから見えるためです。
+3. Render の `mystic-japan-web` の Environment に `NEXT_PUBLIC_CARTO_API_KEY` を入れて、Manual Deploy します。`NEXT_PUBLIC_` の値はビルド時に埋め込まれるため、入れ直したら再デプロイが必要です。
+
+地図には「© OpenStreetMap contributors © CARTO」の表示が必要です（`MysticMap.tsx` の attribution）。
 
 ## render.yamlの役割
 
