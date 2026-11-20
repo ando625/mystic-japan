@@ -69,6 +69,11 @@ function positionedSpots(spots: Spot[]) {
   });
 }
 
+// CARTOの地図タイルはAPIキーが必要です（無いと「API KEY REQUIRED」の画像になります）。
+// キーはブラウザから見える前提のものなので、CARTOの管理画面で使えるドメインを制限して使います。
+const cartoApiKey = process.env.NEXT_PUBLIC_CARTO_API_KEY;
+const cartoTileUrl = `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png${cartoApiKey ? `?key=${encodeURIComponent(cartoApiKey)}` : ""}`;
+
 export function MysticMap({ spots }: { spots: Spot[] }) {
   const markers = positionedSpots(spots);
 
@@ -84,10 +89,10 @@ export function MysticMap({ spots }: { spots: Spot[] }) {
       zoom={5}
     >
       <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
         bounds={japanBounds}
         noWrap
-        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+        url={cartoTileUrl}
       />
       {markers.map(({ spot, position }) => (
         <Marker key={spot.id} icon={createPinIcon(spot)} position={position}>

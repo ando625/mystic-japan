@@ -86,3 +86,6 @@ services:
           type: web
           name: mystic-japan-api
           envVarKey: RENDER_EXTERNAL_URL
+      # 地図タイル（CARTO）のAPIキーです。Renderの画面で入力し、ビルド時に埋め込みます。
+      - key: NEXT_PUBLIC_CARTO_API_KEY
+        sync: false
