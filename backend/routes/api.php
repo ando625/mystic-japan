@@ -43,5 +43,6 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::post('/spots/{spot}/quizzes/retry', [QuizController::class, 'retry']);
 
     // AI旅ガイドAPIです。Next.jsから直接Geminiへ送らず、Laravelでスポット情報を付けて送信します。
-    Route::post('/ai/guide', AiGuideController::class);
+    // 無料枠を使い切られないよう、回数を制限します（AppServiceProvider の ai-guide）。
+    Route::post('/ai/guide', AiGuideController::class)->middleware('throttle:ai-guide');
 });

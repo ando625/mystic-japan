@@ -50,6 +50,15 @@ export function AiGuideChat({ spot, compact = false }: { spot: Spot; compact?: b
         return;
       }
 
+      // 質問の回数が上限を超えたときは、Laravel が 429 を返します（無料枠を守るための回数制限）。
+      if (error instanceof Error && error.message === "API request failed: 429") {
+        setMessages((current) => [
+          ...current,
+          { role: "guide", text: "質問が多すぎます。少し時間をおいてから、もう一度お試しください。" },
+        ]);
+        return;
+      }
+
       setMessages((current) => [
         ...current,
         {
