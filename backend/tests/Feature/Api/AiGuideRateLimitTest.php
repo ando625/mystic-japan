@@ -27,7 +27,8 @@ class AiGuideRateLimitTest extends TestCase
 
         Http::fake([
             'generativelanguage.googleapis.com/*' => Http::response([
-                'candidates' => [['content' => ['parts' => [['text' => 'テスト用の回答です。']]]]],
+                'status' => 'completed',
+                'steps' => [['type' => 'model_output', 'content' => [['type' => 'text', 'text' => 'テスト用の回答です。']]]],
             ]),
         ]);
     }

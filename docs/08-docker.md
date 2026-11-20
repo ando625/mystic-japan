@@ -35,7 +35,7 @@ AI旅ガイドを実際に使う場合は、ルートの `.env` に設定しま�
 
 ```env
 GEMINI_API_KEY=your_api_key
-GEMINI_MODEL=gemini-2.5-flash
+GEMINI_MODEL=gemini-3.5-flash-lite
 ```
 
 キーが未設定でもアプリ自体は起動します。AI旅ガイドAPIだけが503を返します。

@@ -14,45 +14,72 @@ class AiGuideService
     public function answer(Spot $spot, string $message): string
     {
         $apiKey = config('services.gemini.api_key');
-        $model = config('services.gemini.model', 'gemini-2.5-flash');
+        $model = config('services.gemini.model', 'gemini-3.5-flash-lite');
 
         if (! $apiKey) {
             throw new RuntimeException('GEMINI_API_KEY is not configured.');
         }
 
+        // Gemini の Interactions API を呼びます。
+        // 新しい形式（AQ.）の API キーでは、以前の generateContent が 404 になるためです。
+        // キーは URL に入れず、ヘッダーで送ります（記録に残りにくくするため）。
         $response = $this->http
-            ->timeout(20)
-            ->retry(2, 300)
+            ->timeout(30)
+            // 失敗しても例外を投げずに戻し、下の failed() で RuntimeException にそろえます。
+            // （投げると RequestException になり、Controller で受け止められず 500 になるため）
+            ->retry(2, 300, throw: false)
             ->withHeaders([
                 'Content-Type' => 'application/json',
+                'x-goog-api-key' => $apiKey,
+                'Api-Revision' => '2026-05-20',
             ])
-            ->post("https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}", [
-                'contents' => [
-                    [
-                        'role' => 'user',
-                        'parts' => [
-                            ['text' => $this->buildPrompt($spot, $message)],
-                        ],
-                    ],
-                ],
-                'generationConfig' => [
-                    'temperature' => 0.75,
-                    'topP' => 0.9,
-                    'maxOutputTokens' => 900,
+            ->post('https://generativelanguage.googleapis.com/v1beta/interactions', [
+                'model' => $model,
+                'input' => $this->buildPrompt($spot, $message),
+                'generation_config' => [
+                    'max_output_tokens' => 900,
                 ],
             ]);
 
         if ($response->failed()) {
-            throw new RuntimeException('Gemini API request failed.');
+            // 原因を追えるよう、Gemini の状態コードとエラーの種類だけを記録に残します（キーは含めません）。
+            throw new RuntimeException(sprintf(
+                'Gemini API request failed: %d %s (model: %s)',
+                $response->status(),
+                (string) Arr::get($response->json() ?? [], 'error.status', ''),
+                $model,
+            ));
         }
 
-        $answer = Arr::get($response->json(), 'candidates.0.content.parts.0.text');
+        $answer = $this->extractText($response->json() ?? []);
 
-        if (! is_string($answer) || trim($answer) === '') {
+        if ($answer === '') {
             throw new RuntimeException('Gemini API returned an empty answer.');
         }
 
         return trim($answer);
+    }
+
+    // 返事の steps のうち、最後の model_output の step から文（type: text）を取り出してつなげます。
+    // 先頭には考えた過程（type: thought）の step が入ることがあるため、それは読みません。
+    private function extractText(array $interaction): string
+    {
+        $outputs = array_values(array_filter(
+            $interaction['steps'] ?? [],
+            fn ($step) => is_array($step) && ($step['type'] ?? null) === 'model_output',
+        ));
+        $last = end($outputs);
+
+        if (! is_array($last)) {
+            return '';
+        }
+
+        $texts = array_map(
+            fn ($content) => is_array($content) && ($content['type'] ?? null) === 'text' ? (string) ($content['text'] ?? '') : '',
+            $last['content'] ?? [],
+        );
+
+        return trim(implode('', $texts));
     }
 
     private function buildPrompt(Spot $spot, string $message): string

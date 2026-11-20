@@ -39,7 +39,7 @@ class AiGuideController extends Controller
         return response()->json([
             'answer' => $answer,
             'spot_id' => $spot->id,
-            'model' => config('services.gemini.model', 'gemini-2.5-flash'),
+            'model' => config('services.gemini.model', 'gemini-3.5-flash-lite'),
         ]);
     }
 }
