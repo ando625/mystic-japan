@@ -1,5 +1,6 @@
 import { fallbackAchievements } from "@/data/fallback-achievements";
 import { fallbackSpots } from "@/data/fallback-spots";
+import { useAuthStore } from "@/stores/auth-store";
 import type { JsonApiResponse, RetrySpotQuizzesResponse, UnlockSpotResponse, VisitSpotResponse } from "@/types/api";
 import type { Achievement, CollectionSummary, Quiz, QuizAnswerResult, QuizOption, Spot, Stamp, User } from "@/types/domain";
 
@@ -40,6 +41,13 @@ async function request<T>(path: string, token?: string | null, init?: RequestIni
       ...init?.headers,
     },
   });
+
+  if (response.status === 401 && token) {
+    // 保存していたトークンがAPI側に無い場合（DBの作り直し・ログアウト済みなど）は、
+    // ログイン状態を消して、各画面の「ログインが必要です」の表示に戻します。
+    useAuthStore.getState().clearSession();
+    throw new Error("LOGIN_REQUIRED");
+  }
 
   if (!response.ok) {
     throw new Error(`API request failed: ${response.status}`);
