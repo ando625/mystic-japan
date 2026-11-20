@@ -152,6 +152,8 @@ Next.jsからLaravel APIを呼び、LaravelからGemini APIへ質問を送りま
 
 Renderで動かせるように、`render.yaml` とDockerfileを用意しています。
 
+データベースは、期限の無い無料プランがある Neon の PostgreSQL を使っています（Render の無料のデータベースは30日で消えるため）。手順は [Renderデプロイ手順](./docs/09-render.md) にまとめています。
+
 画像や音楽はアップロード保存ではなく、URLやpublic配下のファイルとして扱う形にしています。
 
 ---
@@ -207,6 +209,7 @@ Renderで動かせるように、`render.yaml` とDockerfileを用意してい�
 - Docker Compose
 - Dockerfile
 - Render
+- Neon（PostgreSQL）
 - GitHub
 
 ---
