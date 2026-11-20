@@ -372,7 +372,7 @@ Response:
 
 認証: 必須
 
-Model: `gemini-2.5-flash`
+Model: `gemini-3.5-flash-lite`
 
 Request:
 
@@ -399,7 +399,7 @@ Response:
 {
   "answer": "はい。冬の青い池は雪景色と青い水面の対比が幻想的です...",
   "spot_id": 1,
-  "model": "gemini-2.5-flash"
+  "model": "gemini-3.5-flash-lite"
 }
 ```
 
